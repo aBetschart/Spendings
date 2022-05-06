@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% for spending in spendings %}
+<div class="spending-container">
+    <p>{{ spending.spendingDate }}</p>
+    <p>{{ spending.description }}</p>
+    <p>{{ spending.amount }}</p>
+</div>
+{% endfor %}
+
+{% if spendings|length == 0 %}
+<p>No entries found</p>
+{% endif %}
+
+{% endblock %}
