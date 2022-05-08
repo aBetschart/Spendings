@@ -20,10 +20,10 @@
 <div class="spendings-container">
 {% for spending in spendings %}
     <div class="spending-container">
-        <p>Spent on: {{ spending.spendingDate }}</p>
-        <p>{{ spending.description }}</p>
-        <p>{{ spending.amount }}</p>
-        <p>Entered on: {{ spending.entryDate }}</p>
+        <p style="display: inline-block;">Spent on {{ spending.spendingDate }} |</p>
+        <p style="display: inline-block;">{{ spending.description }} |</p>
+        <p style="display: inline-block;">{{ spending.amount }} |</p>
+        <p style="display: inline-block;">{{ spending.category }}</p>
     </div>
     <hr>
 {% endfor %}
