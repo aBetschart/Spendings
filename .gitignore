@@ -1,5 +1,4 @@
 __pycache__
+migrations
 
-
-Spendings/settings.py
 db.sqlite3

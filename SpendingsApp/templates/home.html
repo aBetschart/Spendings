@@ -1,16 +1,48 @@
 {% extends 'base.html' %}
 
 {% block content %}
-{% for spending in spendings %}
-<div class="spending-container">
-    <p>{{ spending.spendingDate }}</p>
-    <p>{{ spending.description }}</p>
-    <p>{{ spending.amount }}</p>
-</div>
-{% endfor %}
+<h2>Enter new spending</h1>
+<form action="{% url 'home' %}" method="post">
+    {% csrf_token %}
+    {{ spendingForm }}
+    <input type="submit" name="submit-spending" value="Submit">
+</form>
 
-{% if spendings|length == 0 %}
+<h2>Add category</h2>
+<form action="{% url 'home' %}" method="post">
+    {% csrf_token %}
+    {{ categoryForm }}
+    <input type="submit" name="submit-new-category" value="Add">
+</form>
+
+<h2>Entered Spendings</h2>
+{% if spendings|length != 0 %}
+<div class="spendings-container">
+{% for spending in spendings %}
+    <div class="spending-container">
+        <p>Spent on: {{ spending.spendingDate }}</p>
+        <p>{{ spending.description }}</p>
+        <p>{{ spending.amount }}</p>
+        <p>Entered on: {{ spending.entryDate }}</p>
+    </div>
+    <hr>
+{% endfor %}
+</div>
+{% else %}
 <p>No entries found</p>
 {% endif %}
+
+<h2>Categories</h2>
+{% if categories and categories|length != 0 %}
+<div class="categories-container">
+    {% for category in categories %}
+    <div class="category-container">
+        {{ category.name }}
+    </div>
+    {% endfor %}
+{% else %}
+<p>No categories found</p>
+{% endif %}
+</div>
 
 {% endblock %}
