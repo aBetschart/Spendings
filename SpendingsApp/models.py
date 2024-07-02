@@ -12,3 +12,7 @@ class Spending(models.Model):
     description = models.CharField(max_length=100)
     amount = models.FloatField()
     category = models.ForeignKey(Category, on_delete=models.RESTRICT)
+
+    def __str__(self) -> str:
+        date = self.spendingDate.strftime('%d.%m.%y')
+        return f'{date}: {self.description} {self.amount}'
