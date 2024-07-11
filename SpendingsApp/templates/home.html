@@ -2,7 +2,7 @@
 
 {% block content %}
 <h2>Enter new spending</h1>
-<form action="{% url 'home' %}" method="post">
+<form action="{% url 'spending_submit' %}" method="post">
     {% csrf_token %}
     {{ spendingForm }}
     <input type="submit" name="submit-spending" value="Submit">

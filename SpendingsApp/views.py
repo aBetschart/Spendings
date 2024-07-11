@@ -1,11 +1,13 @@
 from django.http import HttpRequest, HttpResponseNotFound
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django import forms
 from .models import Category, Spending
 from .forms import EnterSpendingForm, NewCategoryForm, MonthlySpendingOverview
 
 import calendar
 from datetime import datetime
+
+NUMBER_OF_RECENT_SPENDINGS = 25
 
 def home(request: HttpRequest):
     selectedYear = datetime.now().year
@@ -41,7 +43,7 @@ def home(request: HttpRequest):
             return HttpResponseNotFound("Invalid post request")
 
 
-    spendings = Spending.objects.order_by('-spendingDate')[:25]
+    recentSpendings = Spending.objects.order_by('-spendingDate')[:NUMBER_OF_RECENT_SPENDINGS]
     categories = Category.objects.order_by('name')
     
     spendingForm = EnterSpendingForm()
@@ -49,7 +51,7 @@ def home(request: HttpRequest):
     monthForm = MonthlySpendingOverview()
 
     args = {
-        'spendings': spendings,
+        'spendings': recentSpendings,
         'categories': categories,
         'spendingForm': spendingForm,
         'categoryForm': categoryForm,
@@ -57,3 +59,10 @@ def home(request: HttpRequest):
         'monthlySpendings': monthlySpendings,
     }
     return render(request, 'home.html', args)
+
+def spending_submit(request: HttpRequest):
+    if request.method == 'POST':
+        newSpending = EnterSpendingForm(data=request.POST)
+        if newSpending.is_valid():
+            newSpending.save()
+    return redirect('home')
