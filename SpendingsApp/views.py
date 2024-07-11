@@ -66,3 +66,14 @@ def edit_categories(request: HttpRequest):
         'categories': categories,
     }
     return render(request, 'categories.html', args)
+
+def category_delete(request: HttpRequest, id):
+    category = Category.objects.get(id=id)
+    category.delete()
+    categoryForm = NewCategoryForm()
+    categories = Category.objects.order_by('name')
+    args = {
+        'categoryForm': categoryForm,
+        'categories': categories,
+    }
+    return render(request, 'categories.html', args)

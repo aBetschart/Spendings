@@ -23,5 +23,6 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('month', views.monthly_overview, name='monthly_overview'),
     path('categories', views.edit_categories, name='edit_categories'),
+    path('categories/delete/<int:id>', views.category_delete, name='categories_delete'),
     path('spending/submit', views.spending_submit, name='spending_submit'),
 ]

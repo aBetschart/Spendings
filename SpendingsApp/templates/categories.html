@@ -14,6 +14,7 @@
     {% for category in categories %}
     <div class="category-container">
         {{ category.name }}
+        <a href="categories/delete/{{category.id}}">delete</a>
     </div>
     {% endfor %}
 {% else %}
