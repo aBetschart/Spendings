@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Enter new spending</h1>
-<form action="{% url 'spending_submit' %}" method="post">
+
+<h2>Monthly Overview</h2>
+<form action="{% url 'monthly_overview' %}" method="post">
     {% csrf_token %}
-    {{ spendingForm }}
-    <input type="submit" name="submit-spending" value="Submit">
+    {{ monthForm }}
+    <input type="submit" name="request-month-overview" value="Show">
 </form>
 
-<h2>Recent Spendings</h2>
-{% if spendings|length != 0 %}
+{% if monthlySpendings|length != 0 %}
 <div class="spendings-container">
-{% for spending in spendings %}
+{% for spending in monthlySpendings %}
     <div class="spending-container">
         <p style="display: inline-block;">{{ spending.spendingDate }} |</p>
         <p style="display: inline-block;">{{ spending.description }} |</p>

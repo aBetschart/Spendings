@@ -21,5 +21,7 @@ from SpendingsApp import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
-    path('spending/submit', views.spending_submit, name='spending_submit')
+    path('month', views.monthly_overview, name='monthly_overview'),
+    path('categories', views.edit_categories, name='edit_categories'),
+    path('spending/submit', views.spending_submit, name='spending_submit'),
 ]
