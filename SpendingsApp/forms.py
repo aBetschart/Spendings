@@ -1,4 +1,7 @@
+from typing import Any, Mapping
 from django import forms
+from django.forms.renderers import BaseRenderer
+from django.forms.utils import ErrorList
 from .models import Category, Spending
 
 
@@ -32,5 +35,6 @@ MONTH_CHOICES = (
 )
 
 class MonthlySpendingOverview(forms.Form):
-    month = forms.ChoiceField(choices=MONTH_CHOICES, initial="JULY")
-    year = forms.IntegerField(initial=2024)
+    month = forms.ChoiceField(choices=MONTH_CHOICES)
+    year = forms.IntegerField()
+    
