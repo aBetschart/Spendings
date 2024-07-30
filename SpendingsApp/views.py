@@ -27,13 +27,16 @@ def spending_submit(request: HttpRequest):
     return redirect('home')
 
 def spending_edit(request: HttpRequest, id: int):
-    print(id)
     spending = Spending.objects.get(id=id)
-
     if request.method == 'POST':
+        print(request.POST)
         editedSpending = SpendingForm(data=request.POST, instance=spending)
         if editedSpending.is_valid():
-            editedSpending.save()
+            if 'edit-spending' in request.POST:
+                editedSpending.save()
+            elif 'delete-spending' in request.POST:
+                spending.delete()
+                return redirect('home')
 
     spendingForm = SpendingForm(instance=spending)
 
