@@ -11,7 +11,7 @@ class SpendingForm(forms.ModelForm):
             "spendingDate": forms.DateInput()
         }
        
-class NewCategoryForm(forms.ModelForm):
+class CategoryForm(forms.ModelForm):
     class Meta:
         fields="__all__"
         model = Category
@@ -34,9 +34,4 @@ MONTH_CHOICES = (
 class MonthlySpendingOverview(forms.Form):
     month = forms.ChoiceField(choices=MONTH_CHOICES)
     year = forms.IntegerField()
-
-class EditSpendingForm(forms.ModelForm):
-    class Meta:
-        fields="__all__"
-        model = Spending
     

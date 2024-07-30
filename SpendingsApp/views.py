@@ -1,7 +1,7 @@
 from django.http import HttpRequest
 from django.shortcuts import render, redirect
 from .models import Category, Spending
-from .forms import SpendingForm, NewCategoryForm, MonthlySpendingOverview, MONTH_CHOICES
+from .forms import SpendingForm, CategoryForm, MonthlySpendingOverview, MONTH_CHOICES
 
 import calendar
 from datetime import datetime
@@ -29,7 +29,6 @@ def spending_submit(request: HttpRequest):
 def spending_edit(request: HttpRequest, id: int):
     spending = Spending.objects.get(id=id)
     if request.method == 'POST':
-        print(request.POST)
         editedSpending = SpendingForm(data=request.POST, instance=spending)
         if editedSpending.is_valid():
             if 'edit-spending' in request.POST:
@@ -44,6 +43,49 @@ def spending_edit(request: HttpRequest, id: int):
         'spendingForm': spendingForm
     }
     return render(request, 'spending.html', args)
+
+def categories(request: HttpRequest):
+    if request.method == 'POST':
+        filledForm = CategoryForm(data=request.POST)
+        if filledForm.is_valid():
+            newCategory = filledForm
+            newCategory.save()
+
+    categoryForm = CategoryForm()
+    categories = Category.objects.order_by('name')
+    args = {
+        'categoryForm': categoryForm,
+        'categories': categories,
+    }
+    return render(request, 'categories.html', args)
+
+def category_edit(request: HttpRequest, id: int):
+    category = Category.objects.get(pk=id)
+    if request.method == 'POST':
+        editedCategory = CategoryForm(data=request.POST, instance=category)
+        if editedCategory.is_valid():
+            if 'edit-category' in request.POST:
+                editedCategory.save()
+            elif 'delete-category' in request.POST:
+                category.delete()
+                return redirect('categories')
+    
+    categoryForm = CategoryForm(instance=category)
+    args = {
+        "categoryForm": categoryForm
+    }
+    return render(request, "category.html", args)
+
+def category_delete(request: HttpRequest, id: int):
+    category = Category.objects.get(id=id)
+    category.delete()
+    categoryForm = CategoryForm()
+    categories = Category.objects.order_by('name')
+    args = {
+        'categoryForm': categoryForm,
+        'categories': categories,
+    }
+    return render(request, 'categories.html', args)
 
 def monthly_overview(request: HttpRequest):
     month = datetime.now().month
@@ -88,29 +130,3 @@ def getFirstDayOfMonth(month: int, year: int) -> datetime:
 def getLastDayOfMonth(month: int, year: int) -> datetime:
     lastDay = calendar.monthrange(year, month)[1]
     return datetime(year=year, month=month, day=lastDay)
-
-def categories_edit(request: HttpRequest):
-    if request.method == 'POST':
-        filledForm = NewCategoryForm(data=request.POST)
-        if filledForm.is_valid():
-            newCategory = filledForm
-            newCategory.save()
-
-    categoryForm = NewCategoryForm()
-    categories = Category.objects.order_by('name')
-    args = {
-        'categoryForm': categoryForm,
-        'categories': categories,
-    }
-    return render(request, 'categories.html', args)
-
-def category_delete(request: HttpRequest, id: int):
-    category = Category.objects.get(id=id)
-    category.delete()
-    categoryForm = NewCategoryForm()
-    categories = Category.objects.order_by('name')
-    args = {
-        'categoryForm': categoryForm,
-        'categories': categories,
-    }
-    return render(request, 'categories.html', args)

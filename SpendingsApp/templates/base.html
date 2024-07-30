@@ -11,9 +11,9 @@
     <h1>Spendings</h1>
     <hr>
     <div id="navigation">
-        <a href="{% url 'home' %}">Home</a> |
+        | <a href="{% url 'home' %}">Home</a> |
+        <a href="{% url 'categories' %}">Categories</a> |
         <a href="{% url 'monthly_overview' %}">Monthly Overview</a> | 
-        <a href="{% url 'edit_categories' %}">Edit Categories</a>
     </div>
     
     {% block content %}

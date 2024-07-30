@@ -2,8 +2,8 @@
 
 {% block content %}
 
-<h2>Edit Categories</h2>
-<form action="{% url 'edit_categories' %}" method="post">
+<h2>Categories</h2>
+<form action="{% url 'categories' %}" method="post">
     {% csrf_token %}
     {{ categoryForm }}
     <input type="submit" name="submit-new-category" value="Add">
@@ -14,7 +14,7 @@
     {% for category in categories %}
     <div class="category-container">
         {{ category.name }} | 
-        <a href="{% url 'categories_delete' category.id %}">delete</a>
+        <a href="{% url 'category_edit' category.id %}">Edit</a>
     </div>
     {% endfor %}
 {% else %}
