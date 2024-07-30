@@ -13,8 +13,8 @@
 <div class="categories-container">
     {% for category in categories %}
     <div class="category-container">
-        {{ category.name }}
-        <a href="categories/delete/{{category.id}}">delete</a>
+        {{ category.name }} | 
+        <a href="{% url 'categories_delete' category.id %}">delete</a>
     </div>
     {% endfor %}
 {% else %}

@@ -1,8 +1,7 @@
-from django.http import HttpRequest, HttpResponseNotFound
+from django.http import HttpRequest
 from django.shortcuts import render, redirect
-from django import forms
 from .models import Category, Spending
-from .forms import EnterSpendingForm, NewCategoryForm, MonthlySpendingOverview, MONTH_CHOICES
+from .forms import SpendingForm, NewCategoryForm, MonthlySpendingOverview, MONTH_CHOICES
 
 import calendar
 from datetime import datetime
@@ -10,7 +9,7 @@ from datetime import datetime
 NUMBER_OF_RECENT_SPENDINGS = 10
 
 def home(request: HttpRequest):
-    spendingForm = EnterSpendingForm()
+    spendingForm = SpendingForm()
     order = '-spendingDate'
     recentSpendings = Spending.objects.order_by(order)[:NUMBER_OF_RECENT_SPENDINGS]
     
@@ -22,10 +21,26 @@ def home(request: HttpRequest):
 
 def spending_submit(request: HttpRequest):
     if request.method == 'POST':
-        newSpending = EnterSpendingForm(data=request.POST)
+        newSpending = SpendingForm(data=request.POST)
         if newSpending.is_valid():
             newSpending.save()
     return redirect('home')
+
+def spending_edit(request: HttpRequest, id: int):
+    print(id)
+    spending = Spending.objects.get(id=id)
+
+    if request.method == 'POST':
+        editedSpending = SpendingForm(data=request.POST, instance=spending)
+        if editedSpending.is_valid():
+            editedSpending.save()
+
+    spendingForm = SpendingForm(instance=spending)
+
+    args = {
+        'spendingForm': spendingForm
+    }
+    return render(request, 'spending.html', args)
 
 def monthly_overview(request: HttpRequest):
     month = datetime.now().month
@@ -71,7 +86,7 @@ def getLastDayOfMonth(month: int, year: int) -> datetime:
     lastDay = calendar.monthrange(year, month)[1]
     return datetime(year=year, month=month, day=lastDay)
 
-def edit_categories(request: HttpRequest):
+def categories_edit(request: HttpRequest):
     if request.method == 'POST':
         filledForm = NewCategoryForm(data=request.POST)
         if filledForm.is_valid():
@@ -86,7 +101,7 @@ def edit_categories(request: HttpRequest):
     }
     return render(request, 'categories.html', args)
 
-def category_delete(request: HttpRequest, id):
+def category_delete(request: HttpRequest, id: int):
     category = Category.objects.get(id=id)
     category.delete()
     categoryForm = NewCategoryForm()

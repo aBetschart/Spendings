@@ -1,17 +1,14 @@
-from typing import Any, Mapping
 from django import forms
-from django.forms.renderers import BaseRenderer
-from django.forms.utils import ErrorList
 from .models import Category, Spending
 
 
-class EnterSpendingForm(forms.ModelForm):
-    spendingDate = forms.DateField(input_formats=["%d.%m.%y"], label="Spent on")
+class SpendingForm(forms.ModelForm):
+    spendingDate = forms.DateField(label="Spent on")
     class Meta:
         model = Spending
         exclude = ['entryDate']
         widgets = {
-            "spendingDate": forms.DateInput(format=("%d/%m/%y"))
+            "spendingDate": forms.DateInput()
         }
        
 class NewCategoryForm(forms.ModelForm):
@@ -37,4 +34,9 @@ MONTH_CHOICES = (
 class MonthlySpendingOverview(forms.Form):
     month = forms.ChoiceField(choices=MONTH_CHOICES)
     year = forms.IntegerField()
+
+class EditSpendingForm(forms.ModelForm):
+    class Meta:
+        fields="__all__"
+        model = Spending
     

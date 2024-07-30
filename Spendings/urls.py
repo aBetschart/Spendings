@@ -22,7 +22,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('month', views.monthly_overview, name='monthly_overview'),
-    path('categories', views.edit_categories, name='edit_categories'),
+    path('categories', views.categories_edit, name='edit_categories'),
     path('categories/delete/<int:id>', views.category_delete, name='categories_delete'),
     path('spending/submit', views.spending_submit, name='spending_submit'),
+    path('spending/edit/<int:id>', views.spending_edit, name='spending_edit'),
 ]

@@ -16,7 +16,8 @@
         <p style="display: inline-block;">{{ spending.spendingDate }} |</p>
         <p style="display: inline-block;">{{ spending.description }} |</p>
         <p style="display: inline-block;">{{ spending.amount }} |</p>
-        <p style="display: inline-block;">{{ spending.category }}</p>
+        <p style="display: inline-block;">{{ spending.category }} |</p>
+        <a href="{% url 'spending_edit' spending.id %}">Edit</a>
     </div>
 {% endfor %}
 </div>
