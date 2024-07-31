@@ -31,7 +31,10 @@ MONTH_CHOICES = (
     ("DECEMBER", "December"),
 )
 
-class MonthlySpendingOverview(forms.Form):
+class MonthlyOverviewForm(forms.Form):
     month = forms.ChoiceField(choices=MONTH_CHOICES)
+    year = forms.IntegerField()
+
+class YearlyOverviewForm(forms.Form):
     year = forms.IntegerField()
     

@@ -21,10 +21,11 @@ from SpendingsApp import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
-    path('month', views.monthly_overview, name='monthly_overview'),
+    path('spending/submit', views.spending_submit, name='spending_submit'),
+    path('spending/edit/<int:id>', views.spending_edit, name='spending_edit'),
     path('categories', views.categories, name='categories'),
     path('categories/edit/<int:id>', views.category_edit, name='category_edit'),
     path('categories/delete/<int:id>', views.category_delete, name='category_delete'),
-    path('spending/submit', views.spending_submit, name='spending_submit'),
-    path('spending/edit/<int:id>', views.spending_edit, name='spending_edit'),
+    path('month', views.monthly_overview, name='monthly_overview'),
+    path('year', views.yearly_overview, name='yearly_overview'),
 ]
