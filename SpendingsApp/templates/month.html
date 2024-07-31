@@ -17,9 +17,12 @@
         <p style="display: inline-block;">{{ spending.description }} |</p>
         <p style="display: inline-block;">{{ spending.amount }} |</p>
         <p style="display: inline-block;">{{ spending.category }}</p>
+        <a href="{% url 'spending_edit' spending.id %}">Edit</a>
     </div>
 {% endfor %}
 </div>
+<br>
+<div><b>Total: {{total}}</b></div>
 {% else %}
 <p>No entries found</p>
 {% endif %}

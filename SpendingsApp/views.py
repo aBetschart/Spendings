@@ -109,9 +109,11 @@ def monthly_overview(request: HttpRequest):
         year = int(monthForm.cleaned_data['year'])
     
     monthlySpendings = getMonthlySpendings(month, year)
+    monthlyTotal = calculateSum(monthlySpendings)
     args = {
         'monthForm': monthForm,
         'monthlySpendings': monthlySpendings,
+        'total': monthlyTotal,
     }
     return render(request, 'month.html', args)
 
@@ -130,3 +132,9 @@ def getFirstDayOfMonth(month: int, year: int) -> datetime:
 def getLastDayOfMonth(month: int, year: int) -> datetime:
     lastDay = calendar.monthrange(year, month)[1]
     return datetime(year=year, month=month, day=lastDay)
+
+def calculateSum(monthlySpendings) -> float:
+    sum = 0
+    for spending in monthlySpendings:
+        sum += spending.amount
+    return sum
