@@ -2,24 +2,34 @@
 
 {% block content %}
 
-<h2>Categories</h2>
-<form action="{% url 'categories' %}" method="post">
-    {% csrf_token %}
-    {{ categoryForm }}
-    <input type="submit" name="submit-new-category" value="Add">
-</form>
-<br>
-{% if categories and categories|length != 0 %}
-<div class="categories-container">
-    {% for category in categories %}
-    <div class="category-container">
-        {{ category.name }} | 
-        <a href="{% url 'category_edit' category.id %}">Edit</a>
-    </div>
-    {% endfor %}
-{% else %}
-<p>No categories found</p>
-{% endif %}
+<div class="container">
+    <h2>Categories</h2>
+    
+    <br>
+    
+    <form action="{% url 'categories' %}" method="post">
+        {% csrf_token %}
+        {{ categoryForm }}
+        <input type="submit" class="form-control btn-secondary" name="submit-new-category" value="Add">
+    </form>
+    
+    <br>
+    
+    <table class="table table-hover">
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td>
+                    <a href="{% url 'category_edit' category.id %}">
+                        <div>
+                            {{ category.name }}
+                        </div>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 {% endblock %}

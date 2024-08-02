@@ -11,7 +11,7 @@ NUMBER_OF_RECENT_SPENDINGS = 10
 
 def home(request: HttpRequest):
     spendingForm = SpendingForm()
-    order = '-spendingDate'
+    order = '-entryDate'
     recentSpendings = Spending.objects.order_by(order)[:NUMBER_OF_RECENT_SPENDINGS]
     
     args = {

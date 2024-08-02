@@ -2,14 +2,53 @@
 
 {% block content %}
 
+<div class="container">
+
 <h2>Monthly Overview</h2>
+
+<br>
+
 <form action="{% url 'monthly_overview' %}" method="post">
     {% csrf_token %}
     {{ monthForm }}
     <input type="submit" name="request-month-overview" value="Show">
 </form>
 
-{% if monthlySpendings|length != 0 %}
+<br>
+
+    {% if monthlySpendings|length != 0 %}
+    <table class="table table-striped">
+        <tbody>
+            {% for spending in monthlySpendings %}
+            <tr>
+                <td>
+                    {{ spending.spendingDate }}
+                </td>
+                <td>
+                    {{ spending.category }}
+                </td>
+                <td>
+                    {{ spending.description }}
+                </td>
+                <td>
+                    {{ spending.amount|floatformat:2 }}
+                </td>
+            </tr>
+            {% endfor %}
+            <tr class="table-light">
+                <td></td>
+                <td></td>
+                <th class="text-right">Total</td>
+                <th>{{ total|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% else %}
+    <p>No entries found</p>
+    {% endif %}
+</div>
+
+<!-- {% if monthlySpendings|length != 0 %}
 <div class="spendings-container">
 {% for spending in monthlySpendings %}
     <div class="spending-container">
@@ -25,6 +64,6 @@
 <div><b>Total: {{total}}</b></div>
 {% else %}
 <p>No entries found</p>
-{% endif %}
+{% endif %} -->
 
 {% endblock %}

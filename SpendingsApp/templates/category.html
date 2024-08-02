@@ -2,13 +2,16 @@
 
 {% block content %}
 
-<h2>Edit spending</h2>
-
-<form action="" method="post">
-    {% csrf_token %}
-    {{ categoryForm }}
-    <input type="submit" name="edit-category" value="Edit">
-    <input type="submit" name="delete-category" value="Delete">
-</form>
+<div class="container">
+    <h2>Edit Category</h2>
+    
+    <br>
+    <form class="form-control" action="" method="post">
+        {% csrf_token %}
+        {{ categoryForm }}
+        <input type="submit" class="form-control btn-secondary" name="edit-category" value="Edit">
+        <input type="submit" class="form-control btn btn-danger" name="delete-category" value="Delete">
+    </form>
+</div>
 
 {% endblock %}

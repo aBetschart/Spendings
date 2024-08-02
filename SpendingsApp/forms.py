@@ -16,6 +16,10 @@ class CategoryForm(forms.ModelForm):
         fields="__all__"
         model = Category
 
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'})
+        }
+
 MONTH_CHOICES = (
     ("JANUARY", "January"),
     ("FEBRUARY", "February"),

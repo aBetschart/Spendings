@@ -1,15 +1,53 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Enter new spending</h1>
-<form action="{% url 'spending_submit' %}" method="post">
-    {% csrf_token %}
-    {{ spendingForm }}
-    <input type="submit" name="submit-spending" value="Submit">
-</form>
 
-<h2>Recent Spendings</h2>
-{% if spendings|length != 0 %}
+<div class="container">
+    
+    <h2>Submit Spending</h1>
+
+    <br>
+
+    <form action="{% url 'spending_submit' %}" method="post">
+        {% csrf_token %}
+        {{ spendingForm }}
+        <input type="submit" name="submit-spending" value="Submit">
+    </form>
+
+    <br>
+
+    <h2>Recently submitted</h2>
+    <br>
+    
+    {% if spendings|length != 0 %}
+
+    <table class="table table-striped">
+        <tbody>
+            {% for spending in spendings %}
+            <tr>
+                <td>
+                    {{ spending.spendingDate }}
+                </td>
+                <td>
+                    {{ spending.category }}
+                </td>
+                <td>
+                    {{ spending.description }}
+                </td>
+                <td>
+                    <a href="{% url 'spending_edit' spending.id %}">{{ spending.amount|floatformat:2 }}</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+    <p>No entries found</p>
+    {% endif %}
+</div>
+
+<!-- {% if spendings|length != 0 %}
 <div class="spendings-container">
 {% for spending in spendings %}
     <div class="spending-container">
@@ -23,6 +61,6 @@
 </div>
 {% else %}
 <p>No entries found</p>
-{% endif %}
+{% endif %} -->
 
 {% endblock %}
