@@ -7,7 +7,7 @@ class SpendingForm(forms.ModelForm):
         model = Spending
         exclude = ['entryDate']
         widgets = {
-            "spendingDate": forms.DateInput(attrs={'class': 'form-control', 'placeholder': 'Spent on'}),
+            "spendingDate": forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'placeholder': 'Spent on'}),
             'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Description'}),
             'amount': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Amount'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
