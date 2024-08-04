@@ -125,7 +125,8 @@ def getMonthNumber(monthName: str) -> int:
 def getMonthlySpendings(month: int, year: int):
     start = getFirstDayOfMonth(month, year)
     end = getLastDayOfMonth(month, year)
-    return Spending.objects.filter(spendingDate__gte=start, spendingDate__lte=end)
+    order = '-spendingDate'
+    return Spending.objects.filter(spendingDate__gte=start, spendingDate__lte=end).order_by(order)
 
 def getFirstDayOfMonth(month: int, year: int) -> datetime:
     return datetime(year=year, month=month, day=1)

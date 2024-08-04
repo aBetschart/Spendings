@@ -4,14 +4,33 @@
 
 <div class="container">
     
-    <h2>Submit Spending</h1>
+    <h2>Submit Spending</h2>
 
     <br>
 
     <form action="{% url 'spending_submit' %}" method="post">
         {% csrf_token %}
-        {{ spendingForm }}
-        <input type="submit" name="submit-spending" value="Submit">
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col">
+                    {{ spendingForm.spendingDate }}
+                </div>
+                <div class="col">
+                    {{ spendingForm.description }}
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col">
+                    {{ spendingForm.amount }}
+                </div>
+                <div class="col">
+                    {{ spendingForm.category }}
+                </div>
+            </div>
+        </div>
+        <input type="submit" class="btn btn-secondary form-control" name="submit-spending" value="Submit">
     </form>
 
     <br>
@@ -46,21 +65,5 @@
     <p>No entries found</p>
     {% endif %}
 </div>
-
-<!-- {% if spendings|length != 0 %}
-<div class="spendings-container">
-{% for spending in spendings %}
-    <div class="spending-container">
-        <p style="display: inline-block;">{{ spending.spendingDate }} |</p>
-        <p style="display: inline-block;">{{ spending.description }} |</p>
-        <p style="display: inline-block;">{{ spending.amount }} |</p>
-        <p style="display: inline-block;">{{ spending.category }} |</p>
-        <a href="{% url 'spending_edit' spending.id %}">Edit</a>
-    </div>
-{% endfor %}
-</div>
-{% else %}
-<p>No entries found</p>
-{% endif %} -->
 
 {% endblock %}

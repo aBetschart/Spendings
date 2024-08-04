@@ -10,8 +10,17 @@
 
 <form action="{% url 'monthly_overview' %}" method="post">
     {% csrf_token %}
-    {{ monthForm }}
-    <input type="submit" name="request-month-overview" value="Show">
+    <div class="form-group">
+        <div class="form-row">
+            <div class="col">
+                {{ monthForm.month }}
+            </div>
+            <div class="col">
+                {{ monthForm.year }}
+            </div>
+        </div>
+    </div>
+    <input type="submit" class="btn btn-secondary form-control" name="request-month-overview" value="Show">
 </form>
 
 <br>
@@ -30,7 +39,7 @@
                 <td>
                     {{ spending.description }}
                 </td>
-                <td>
+                <td class="text-right">
                     {{ spending.amount|floatformat:2 }}
                 </td>
             </tr>
@@ -39,7 +48,7 @@
                 <td></td>
                 <td></td>
                 <th class="text-right">Total</td>
-                <th>{{ total|floatformat:2 }}</td>
+                <th class="text-right">{{ total|floatformat:2 }}</td>
             </tr>
         </tbody>
     </table>
