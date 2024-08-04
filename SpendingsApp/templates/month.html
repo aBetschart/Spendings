@@ -40,7 +40,7 @@
                     {{ spending.description }}
                 </td>
                 <td class="text-right">
-                    {{ spending.amount|floatformat:2 }}
+                    <a href="{% url 'spending_edit' spending.id %}">{{ spending.amount|floatformat:2 }}</a>
                 </td>
             </tr>
             {% endfor %}
