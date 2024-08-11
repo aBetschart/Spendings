@@ -6,9 +6,12 @@
 <div class="container">
   <h2>Yearly Overview</h2>
   <br>
+  
   <form action="{% url 'yearly_overview' %}" method="post">
       {% csrf_token %}
-      {{ yearForm }}
+      <div class="form-group">
+        {{ yearForm.year }}
+      </div>
       <input type="submit" class="btn btn-secondary form-control" name="request-month-overview" value="Show">
   </form>
 

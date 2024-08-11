@@ -9,7 +9,9 @@
     
     <form action="{% url 'categories' %}" method="post">
         {% csrf_token %}
-        {{ categoryForm }}
+        <div class="form-group">
+            {{ categoryForm.name }}
+        </div>
         <input type="submit" class="form-control btn-secondary" name="submit-new-category" value="Add">
     </form>
     
