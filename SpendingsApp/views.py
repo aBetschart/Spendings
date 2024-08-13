@@ -1,15 +1,15 @@
-from django.http import HttpRequest
+from django.http import HttpRequest, JsonResponse
 from django.shortcuts import render, redirect
 from .models import Category, Spending
 from .forms import SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
 
 import calendar
 from datetime import datetime
-from typing import List
 
 NUMBER_OF_RECENT_SPENDINGS = 10
 
 def home(request: HttpRequest):
+    
     spendingForm = SpendingForm()
     order = '-entryDate'
     recentSpendings = Spending.objects.order_by(order)[:NUMBER_OF_RECENT_SPENDINGS]
@@ -26,6 +26,28 @@ def spending_submit(request: HttpRequest):
         if newSpending.is_valid():
             newSpending.save()
     return redirect('home')
+
+def spending_submit_api(request: HttpRequest):
+    data = {}
+    status = 200
+
+    if request.method == 'POST':
+        form = SpendingForm(data=request.POST)
+        if form.is_valid():
+            saveNewSpending(form.cleaned_data)
+        else:
+            data["errors"] = form.errors
+            status = 400
+
+    return JsonResponse(data, status=status)
+
+def saveNewSpending(data: dict[str, any]):
+    spendingDate = data['spendingDate']
+    description = data['description']
+    amount = data['amount']
+    category = data['category']
+    newSpending = Spending(spendingDate=spendingDate, description=description, amount=amount, category=category)
+    newSpending.save()
 
 def spending_edit(request: HttpRequest, id: int):
     spending = Spending.objects.get(id=id)
