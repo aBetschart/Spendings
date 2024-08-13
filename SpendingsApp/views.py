@@ -6,18 +6,21 @@ from .forms import SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOvervi
 import calendar
 from datetime import datetime
 
-NUMBER_OF_RECENT_SPENDINGS = 10
+DEFAULT_RECENT_SPENDINGS_COUNT = 10
 
 def home(request: HttpRequest):
     spendingForm = SpendingForm()
-    order = '-entryDate'
-    recentSpendings = Spending.objects.order_by(order)[:NUMBER_OF_RECENT_SPENDINGS]
+    recentSpendings = get_recent_spendings(DEFAULT_RECENT_SPENDINGS_COUNT)
     
     args = {
         'spendingForm': spendingForm,
         'spendings': recentSpendings,
     }
     return render(request, 'home.html', args)
+
+def get_recent_spendings(numberOfSpendings: int):
+    order = '-entryDate'
+    return Spending.objects.order_by(order)[:numberOfSpendings]
 
 def spending_submit(request: HttpRequest):
     if request.method == 'POST':
@@ -31,7 +34,6 @@ def spending_submit_api(request: HttpRequest):
     status = 200
 
     if request.method == 'POST':
-        print(request.POST)
         form = SpendingForm(data=request.POST)
         if form.is_valid():
             saveNewSpending(form.cleaned_data)
@@ -41,6 +43,43 @@ def spending_submit_api(request: HttpRequest):
             status = 400
 
     return JsonResponse(data, status=status)
+
+def spending_get_recent_api(request: HttpRequest):
+    data = {}
+    status = 200
+
+    if request.method == 'GET':
+        queryData = request.GET
+        spendingsCount = DEFAULT_RECENT_SPENDINGS_COUNT
+        try:
+            spendingsCount = int(queryData['numberOfSpendings'])
+        except:
+            pass
+        
+        spendings = get_recent_spendings(spendingsCount)
+        data['spendings'] = form_spendings_response(spendings)
+        
+    else:
+        data = {'message': 'Only GET here'}
+        status = 400
+
+    return JsonResponse(data, status=status)
+
+def form_spendings_response(spendings):
+    spendingResponse = []
+    for spending in spendings:
+        spendingDict = spendingToDict(spending)
+        spendingResponse.append(spendingDict)
+    return spendingResponse
+
+def spendingToDict(spending) -> dict[str, any]:
+    return {
+        'id': spending.id,
+        'spendingDate': spending.spendingDate,
+        'description': spending.description,
+        'amount': spending.amount,
+        'category': spending.category.pk,   
+    }
 
 def saveNewSpending(data: dict[str, any]):
     spendingDate = data['spendingDate']
