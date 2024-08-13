@@ -7,7 +7,7 @@
     <h2>Submit Spending</h2>
     <br>
     
-    <form action="{% url 'spending_submit' %}" method="post">
+    <form action="/create_post/" method="POST" id="spending-form">
         {% csrf_token %}
         <div class="form-group">
             <div class="form-row">
@@ -67,6 +67,8 @@
     {% endif %}
 </div>
 
+{% load static %}
+<script src="{% static 'js/submit_spending.js' %}"></script>
 {% load static %}
 <script src="{% static 'js/today.js' %}"></script>
 

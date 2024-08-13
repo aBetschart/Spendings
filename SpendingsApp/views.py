@@ -9,7 +9,6 @@ from datetime import datetime
 NUMBER_OF_RECENT_SPENDINGS = 10
 
 def home(request: HttpRequest):
-    
     spendingForm = SpendingForm()
     order = '-entryDate'
     recentSpendings = Spending.objects.order_by(order)[:NUMBER_OF_RECENT_SPENDINGS]
@@ -32,9 +31,11 @@ def spending_submit_api(request: HttpRequest):
     status = 200
 
     if request.method == 'POST':
+        print(request.POST)
         form = SpendingForm(data=request.POST)
         if form.is_valid():
             saveNewSpending(form.cleaned_data)
+            data["mesage"] = "Spending entered"
         else:
             data["errors"] = form.errors
             status = 400
