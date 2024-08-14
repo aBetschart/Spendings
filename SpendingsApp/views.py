@@ -34,7 +34,11 @@ def spending_submit_api(request: HttpRequest):
     status = 200
 
     if request.method == 'POST':
-        form = SpendingForm(data=request.POST)
+        postData = request.POST.dict()
+        id = convert_to_category_id(postData['category'])
+        postData['category'] = id
+
+        form = SpendingForm(data=postData)
         if form.is_valid():
             saveNewSpending(form.cleaned_data)
             data["mesage"] = "Spending entered"
@@ -43,6 +47,17 @@ def spending_submit_api(request: HttpRequest):
             status = 400
 
     return JsonResponse(data, status=status)
+
+def convert_to_category_id(category):
+    try:
+        id = int(category)
+    except:
+        name = category
+        category = Category.objects.get(name=name)
+        id = category.pk
+    
+    return id
+
 
 def spending_get_recent_api(request: HttpRequest):
     data = {}
