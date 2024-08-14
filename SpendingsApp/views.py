@@ -11,7 +11,7 @@ DEFAULT_RECENT_SPENDINGS_COUNT = 10
 def home(request: HttpRequest):
     spendingForm = SpendingForm()
     recentSpendings = get_recent_spendings(DEFAULT_RECENT_SPENDINGS_COUNT)
-    
+
     args = {
         'spendingForm': spendingForm,
         'spendings': recentSpendings,
@@ -58,7 +58,7 @@ def spending_get_recent_api(request: HttpRequest):
         
         spendings = get_recent_spendings(spendingsCount)
         data['spendings'] = form_spendings_response(spendings)
-        
+
     else:
         data = {'message': 'Only GET here'}
         status = 400
@@ -72,13 +72,13 @@ def form_spendings_response(spendings):
         spendingResponse.append(spendingDict)
     return spendingResponse
 
-def spendingToDict(spending) -> dict[str, any]:
+def spendingToDict(spending: Spending) -> dict[str, any]:
     return {
         'id': spending.id,
         'spendingDate': spending.spendingDate,
         'description': spending.description,
         'amount': spending.amount,
-        'category': spending.category.pk,   
+        'category': {'id': spending.category.pk, 'name': spending.category.name},
     }
 
 def saveNewSpending(data: dict[str, any]):
