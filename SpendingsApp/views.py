@@ -1,4 +1,4 @@
-from django.http import HttpRequest, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render, redirect
 from .models import Category, Spending
 from .forms import SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
@@ -40,8 +40,8 @@ def spending_submit_api(request: HttpRequest):
 
         form = SpendingForm(data=postData)
         if form.is_valid():
-            saveNewSpending(form.cleaned_data)
-            data["mesage"] = "Spending entered"
+            save_new_spending(form.cleaned_data)
+            data["message"] = "Spending entered"
         else:
             data["errors"] = form.errors
             status = 400
@@ -58,6 +58,14 @@ def convert_to_category_id(category):
     
     return id
 
+def save_new_spending(data: dict[str, any]):
+    spendingDate = data['spendingDate']
+    description = data['description']
+    amount = data['amount']
+    category = data['category']
+    newSpending = Spending(spendingDate=spendingDate, description=description, amount=amount, category=category)
+    newSpending.save()
+
 
 def spending_get_recent_api(request: HttpRequest):
     data = {}
@@ -65,15 +73,13 @@ def spending_get_recent_api(request: HttpRequest):
 
     if request.method == 'GET':
         queryData = request.GET
-        spendingsCount = DEFAULT_RECENT_SPENDINGS_COUNT
         try:
             spendingsCount = int(queryData['numberOfSpendings'])
         except:
-            pass
+            spendingsCount = DEFAULT_RECENT_SPENDINGS_COUNT
         
         spendings = get_recent_spendings(spendingsCount)
         data['spendings'] = form_spendings_response(spendings)
-
     else:
         data = {'message': 'Only GET here'}
         status = 400
@@ -95,14 +101,6 @@ def spendingToDict(spending: Spending) -> dict[str, any]:
         'amount': spending.amount,
         'category': {'id': spending.category.pk, 'name': spending.category.name},
     }
-
-def saveNewSpending(data: dict[str, any]):
-    spendingDate = data['spendingDate']
-    description = data['description']
-    amount = data['amount']
-    category = data['category']
-    newSpending = Spending(spendingDate=spendingDate, description=description, amount=amount, category=category)
-    newSpending.save()
 
 def spending_edit(request: HttpRequest, id: int):
     spending = Spending.objects.get(id=id)
@@ -166,53 +164,58 @@ def category_delete(request: HttpRequest, id: int):
     return render(request, 'categories.html', args)
 
 def monthly_overview(request: HttpRequest):
-    month = datetime.now().month
-    year = datetime.now().year
-    monthIndex = month - 1
-    initial = {
-        'month': MONTH_CHOICES[monthIndex][0],
-        'year': year
-    }
-    monthForm = MonthlyOverviewForm(initial=initial)
-    monthlySpendings = []
+    month_of_year = datetime.now()
+    month_form = setup_month_form(month_of_year)
 
     if request.method == 'POST':
-        filledForm = MonthlyOverviewForm(data=request.POST)
-        if not filledForm.is_valid():
-            raise Exception("Month form was invalid")
+        filled_form = MonthlyOverviewForm(data=request.POST)
+        if not filled_form.is_valid():
+            return HttpResponseBadRequest("Invalid form request")
+        month_form = filled_form
         
-        monthForm = filledForm
-        monthName = str(monthForm.cleaned_data['month'])
-        month = getMonthNumber(monthName)
-        year = int(monthForm.cleaned_data['year'])
+        month_of_year = extract_month_of_year(month_form)
     
-    monthlySpendings = getMonthlySpendings(month, year)
-    monthlyTotal = calculateTotal(monthlySpendings)
+    monthly_spendings = get_spendings_of_month(month_of_year)
+    monthlyTotal = calculate_total(monthly_spendings)
     args = {
-        'monthForm': monthForm,
-        'monthlySpendings': monthlySpendings,
+        'monthForm': month_form,
+        'monthlySpendings': monthly_spendings,
         'total': monthlyTotal,
     }
     return render(request, 'month.html', args)
 
-def getMonthNumber(monthName: str) -> int:
+def setup_month_form(month_of_year: datetime) -> MonthlyOverviewForm:
+    monthIndex = month_of_year.month
+    initial = {
+        'month': MONTH_CHOICES[monthIndex][0],
+        'year': month_of_year.year
+    }
+    return MonthlyOverviewForm(initial=initial)
+
+def extract_month_of_year(month_form: MonthlyOverviewForm) -> datetime:
+    month_name = str(month_form.cleaned_data['month'])
+    month = month_name_to_number(month_name)
+    year = int(month_form.cleaned_data['year'])
+    return datetime(month=month, year=year)
+
+def month_name_to_number(monthName: str) -> int:
     cleanMonthName = monthName[0].upper() + monthName[1:].lower()
     return list(calendar.month_name).index(cleanMonthName)
 
-def getMonthlySpendings(month: int, year: int):
-    start = getFirstDayOfMonth(month, year)
-    end = getLastDayOfMonth(month, year)
+def get_spendings_of_month(month: datetime):
+    start = get_first_day_of_month(month)
+    end = get_last_day_of_month(month)
     order = '-spendingDate'
     return Spending.objects.filter(spendingDate__gte=start, spendingDate__lte=end).order_by(order)
 
-def getFirstDayOfMonth(month: int, year: int) -> datetime:
-    return datetime(year=year, month=month, day=1)
+def get_first_day_of_month(month: datetime) -> datetime:
+    return datetime(year=month.year, month=month, day=1)
 
-def getLastDayOfMonth(month: int, year: int) -> datetime:
-    lastDay = calendar.monthrange(year, month)[1]
-    return datetime(year=year, month=month, day=lastDay)
+def get_last_day_of_month(month: datetime) -> datetime:
+    lastDay = calendar.monthrange(month.year, month)[1]
+    return datetime(year=month.year, month=month, day=lastDay)
 
-def calculateTotal(spendings) -> float:
+def calculate_total(spendings) -> float:
     sum = 0
     for spending in spendings:
         sum += spending.amount
@@ -261,7 +264,7 @@ def yearly_overview(request: HttpRequest):
         yearlyTotalOfCategory = 0
         for month in range(1, 13):
             spendings = getMonthlySpendingsFormCategory(category, month, year)
-            monthlyTotal = calculateTotal(spendings)
+            monthlyTotal = calculate_total(spendings)
             yearlySpending.monthlyTotals[month] = monthlyTotal
             yearlyTotalOfCategory += monthlyTotal
         yearlySpending.yearlyTotalOfCategory = yearlyTotalOfCategory
@@ -280,8 +283,9 @@ def yearly_overview(request: HttpRequest):
     return render(request, "year.html", args)
 
 def getMonthlySpendingsFormCategory(category: Category, month: int, year: int):
-    first = getFirstDayOfMonth(month, year)
-    last = getLastDayOfMonth(month, year)
+    month_of_year = datetime(month=month, year=year)
+    first = get_first_day_of_month(month_of_year)
+    last = get_last_day_of_month(month_of_year)
     return Spending.objects.filter(spendingDate__gte=first, spendingDate__lte=last, category=category)
 
     
