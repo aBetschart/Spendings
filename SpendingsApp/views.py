@@ -196,7 +196,7 @@ def extract_month_of_year(month_form: MonthlyOverviewForm) -> datetime:
     month_name = str(month_form.cleaned_data['month'])
     month = month_name_to_number(month_name)
     year = int(month_form.cleaned_data['year'])
-    return datetime(month=month, year=year)
+    return datetime(day=1, month=month, year=year)
 
 def month_name_to_number(monthName: str) -> int:
     cleanMonthName = monthName[0].upper() + monthName[1:].lower()
@@ -209,11 +209,11 @@ def get_spendings_of_month(month: datetime):
     return Spending.objects.filter(spendingDate__gte=start, spendingDate__lte=end).order_by(order)
 
 def get_first_day_of_month(month: datetime) -> datetime:
-    return datetime(year=month.year, month=month, day=1)
+    return datetime(year=month.year, month=month.month, day=1)
 
 def get_last_day_of_month(month: datetime) -> datetime:
-    lastDay = calendar.monthrange(month.year, month)[1]
-    return datetime(year=month.year, month=month, day=lastDay)
+    lastDay = calendar.monthrange(month.year, month.month)[1]
+    return datetime(year=month.year, month=month.month, day=lastDay)
 
 def calculate_total(spendings) -> float:
     sum = 0
@@ -283,7 +283,7 @@ def yearly_overview(request: HttpRequest):
     return render(request, "year.html", args)
 
 def getMonthlySpendingsFormCategory(category: Category, month: int, year: int):
-    month_of_year = datetime(month=month, year=year)
+    month_of_year = datetime(day=1, month=month, year=year)
     first = get_first_day_of_month(month_of_year)
     last = get_last_day_of_month(month_of_year)
     return Spending.objects.filter(spendingDate__gte=first, spendingDate__lte=last, category=category)
