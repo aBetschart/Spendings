@@ -12,10 +12,10 @@
         {% csrf_token %}
         <div class="form-group">
             <div class="form-row">
-                <div class="col-3">
+                <div class="col-4">
                     {{ spendingForm.spendingDate }}
                 </div>
-                <div class="col-3">
+                <div class="col-2">
                     <button type="button" class="btn btn-secondary form-control" onclick="insertTodaysDate(document.getElementById('id_spendingDate'))">today</button>
                 </div>
                 <div class="col-6">
