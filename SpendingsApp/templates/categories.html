@@ -9,29 +9,34 @@
     
     <form action="{% url 'categories' %}" method="post">
         {% csrf_token %}
-        <div class="form-group">
-            {{ categoryForm.name }}
+        <div class="row">
+            <div class="col col-8">
+                {{ categoryForm.name }}
+            </div>
+            <div class="col col-4">
+                <input type="submit" class="form-control btn btn-secondary" name="submit-new-category" value="Add">
+            </div>
         </div>
-        <input type="submit" class="form-control btn-secondary" name="submit-new-category" value="Add">
     </form>
     
     <br>
-    
-    <table class="table table-hover">
-        <tbody>
-            {% for category in categories %}
-            <tr>
-                <td>
-                    <a href="{% url 'category_edit' category.id %}">
-                        <div>
-                            {{ category.name }}
-                        </div>
-                    </a>
-                </td>
-            </tr>
+
+    <div class="text-center">
+        {% load spendings_tags %}
+        {% with categories|split_to_group_size:3 as category_groups %}
+        {% for category_group in category_groups %}
+        <div class="row">
+            {% for category in category_group %}
+            <div class="col col-4 mb-3">
+                <a class="btn btn-outline-primary w-100" href="{% url 'category_edit' category.id %}">
+                    {{ category.name }}
+                </a>
+            </div>
             {% endfor %}
-        </tbody>
-    </table>
+        </div>
+        {% endfor %}
+        {% endwith %}
+    </div>
 </div>
 
 {% endblock %}

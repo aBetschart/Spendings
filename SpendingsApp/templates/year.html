@@ -9,10 +9,14 @@
   
   <form action="{% url 'yearly_overview' %}" method="post">
       {% csrf_token %}
-      <div class="form-group">
-        {{ yearForm.year }}
+      <div class="row">
+        <div class="col">
+          {{ yearForm.year }}
+        </div>
+        <div class="col">
+          <input type="submit" class="btn btn-secondary form-control" name="request-month-overview" value="Show">
+        </div>
       </div>
-      <input type="submit" class="btn btn-secondary form-control" name="request-month-overview" value="Show">
   </form>
 
 </div>
@@ -21,28 +25,28 @@
 
 {% if categorizedSpendings|length != 0 %}
 <table class="table table-striped">
-    <thead class="table-dark">
-      <tr class="text-right">
-        <th>Category</th>
-        <th scope="col" class="col-1">Jan</th>
-        <th scope="col" class="col-1">Feb</th>
-        <th scope="col" class="col-1">Mar</th>
-        <th scope="col" class="col-1">Apr</th>
-        <th scope="col" class="col-1">May</th>
-        <th scope="col" class="col-1">Jun</th>
-        <th scope="col" class="col-1">Jul</th>
-        <th scope="col" class="col-1">Aug</th>
-        <th scope="col" class="col-1">Sep</th>
-        <th scope="col" class="col-1">Oct</th>
-        <th scope="col" class="col-1">Nov</th>
-        <th scope="col" class="col-1">Dec</th>
-        <th>Total</th>
+    <thead>
+      <tr class="text-end">
+        <th scope="col" class="col-2 text-start">Category</th>
+        <th scope="col" class="min">Jan</th>
+        <th scope="col" class="min">Feb</th>
+        <th scope="col" class="min">Mar</th>
+        <th scope="col" class="min">Apr</th>
+        <th scope="col" class="min">May</th>
+        <th scope="col" class="min">Jun</th>
+        <th scope="col" class="min">Jul</th>
+        <th scope="col" class="min">Aug</th>
+        <th scope="col" class="min">Sep</th>
+        <th scope="col" class="min">Oct</th>
+        <th scope="col" class="min">Nov</th>
+        <th scope="col" class="min">Dec</th>
+        <th scope="col" class="min">Total</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody class="table-group-divider">
       {% for categorizedSpending in categorizedSpendings %}
-      <tr class="text-right">
-        <th>{{ categorizedSpending.category }}</th>
+      <tr class="text-end">
+        <th class="text-start">{{ categorizedSpending.category }}</th>
         <td>{{ categorizedSpending.monthlyTotals.1|floatformat:2 }}</td>
         <td>{{ categorizedSpending.monthlyTotals.2|floatformat:2 }}</td>
         <td>{{ categorizedSpending.monthlyTotals.3|floatformat:2 }}</td>
@@ -58,23 +62,13 @@
         <th>{{ categorizedSpending.yearlyTotalOfCategory|floatformat:2 }}</th>
       </tr>
       {% endfor %}
-      <tr>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td><b>Yearly total</b></td>
-          <th>{{ yearlyTotal|floatformat:2 }}</th>
-      </tr>
     </tbody>
+    <tfoot class="table-group-divider">
+      <tr>
+          <td colspan="13" class="text-end"><b>Yearly total</b></td>
+          <td class="text-end"><b>{{ yearlyTotal|floatformat:2 }}</b></td>
+      </tr>
+    </tfoot>
   </table> 
 
 {% else %}

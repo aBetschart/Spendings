@@ -11,23 +11,33 @@
 <form action="{% url 'monthly_overview' %}" method="post">
     {% csrf_token %}
     <div class="form-group">
-        <div class="form-row">
+        <div class="row">
             <div class="col">
                 {{ monthForm.month }}
             </div>
             <div class="col">
                 {{ monthForm.year }}
             </div>
+            <div class="col">
+                <input type="submit" class="btn btn-secondary form-control" name="request-month-overview" value="Show">
+            </div>
         </div>
     </div>
-    <input type="submit" class="btn btn-secondary form-control" name="request-month-overview" value="Show">
 </form>
 
 <br>
 
     {% if monthlySpendings|length != 0 %}
     <table class="table table-striped">
-        <tbody>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th class="text-end">Amount</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
             {% for spending in monthlySpendings %}
             <tr>
                 <td>
@@ -39,40 +49,28 @@
                 <td>
                     {{ spending.description }}
                 </td>
-                <td class="text-right">
-                    <a href="{% url 'spending_edit' spending.id %}">{{ spending.amount|floatformat:2 }}</a>
+                <td class="text-end">
+                    <a 
+                        class="link-underline link-underline-opacity-0" 
+                        href="{% url 'spending_edit' spending.id %}">
+                        {{ spending.amount|floatformat:2 }}
+                    </a>
                 </td>
             </tr>
             {% endfor %}
-            <tr class="table-light">
-                <td></td>
-                <td></td>
-                <th class="text-right">Total</td>
-                <th class="text-right">{{ total|floatformat:2 }}</td>
-            </tr>
+            <tfoot class="table-group-divider">
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <th class="text-end">Total</td>
+                    <th class="text-end">{{ total|floatformat:2 }}</td>
+                </tr>
+            </tfoot>
         </tbody>
     </table>
     {% else %}
     <p>No entries found</p>
     {% endif %}
 </div>
-
-<!-- {% if monthlySpendings|length != 0 %}
-<div class="spendings-container">
-{% for spending in monthlySpendings %}
-    <div class="spending-container">
-        <p style="display: inline-block;">{{ spending.spendingDate }} |</p>
-        <p style="display: inline-block;">{{ spending.description }} |</p>
-        <p style="display: inline-block;">{{ spending.amount }} |</p>
-        <p style="display: inline-block;">{{ spending.category }}</p>
-        <a href="{% url 'spending_edit' spending.id %}">Edit</a>
-    </div>
-{% endfor %}
-</div>
-<br>
-<div><b>Total: {{total}}</b></div>
-{% else %}
-<p>No entries found</p>
-{% endif %} -->
 
 {% endblock %}

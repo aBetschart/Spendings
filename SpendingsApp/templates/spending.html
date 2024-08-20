@@ -9,32 +9,29 @@
 
     <form action="" method="post">
         {% csrf_token %}
-
-        <div class="form-group">
-            <div class="form-row">
-                <div class="col">
-                    {{ spendingForm.spendingDate }}
-                </div>
-                <div class="col">
-                    {{ spendingForm.description }}
-                </div>
+        <div class="row mb-3">
+            <div class="col">
+                {{ spendingForm.spendingDate }}
+            </div>
+            <div class="col">
+                {{ spendingForm.description }}
             </div>
         </div>
-        <div class="form-group">
-            <div class="form-row">
-                <div class="col">
-                    {{ spendingForm.amount }}
-                </div>
-                <div class="col">
-                    {{ spendingForm.category }}
-                </div>
+        <div class="row mb-3">
+            <div class="col">
+                {{ spendingForm.amount }}
+            </div>
+            <div class="col">
+                {{ spendingForm.category }}
             </div>
         </div>
-        <div class="form-group">
-            <input type="submit" class="btn btn-secondary form-control" name="edit-spending" value="Edit">
-        </div>
-        <div class="form-group">
-            <input type="submit" class="btn btn-danger form-control" name="delete-spending" value="Delete">
+        <div class="row mb-3">
+            <div class="col">
+                <input type="submit" class="btn btn-secondary form-control" name="edit-spending" value="Edit">
+            </div>
+            <div class="col">
+                <input type="submit" class="btn btn-danger form-control" name="delete-spending" value="Delete">
+            </div>
         </div>
     </form>
 

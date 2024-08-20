@@ -185,7 +185,7 @@ def monthly_overview(request: HttpRequest):
     return render(request, 'month.html', args)
 
 def setup_month_form(month_of_year: datetime) -> MonthlyOverviewForm:
-    monthIndex = month_of_year.month
+    monthIndex = month_of_year.month - 1
     initial = {
         'month': MONTH_CHOICES[monthIndex][0],
         'year': month_of_year.year
