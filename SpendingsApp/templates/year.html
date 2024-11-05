@@ -2,7 +2,6 @@
 
 {% block content %}
 
-
 <div class="container">
   <h2>Yearly Overview</h2>
   <br>
@@ -19,60 +18,88 @@
       </div>
   </form>
 
-</div>
+</div> 
 
 <br>
 
-{% if categorizedSpendings|length != 0 %}
-<table class="table table-striped">
-    <thead>
-      <tr class="text-end">
-        <th scope="col" class="col-2 text-start">Category</th>
-        <th scope="col" class="min">Jan</th>
-        <th scope="col" class="min">Feb</th>
-        <th scope="col" class="min">Mar</th>
-        <th scope="col" class="min">Apr</th>
-        <th scope="col" class="min">May</th>
-        <th scope="col" class="min">Jun</th>
-        <th scope="col" class="min">Jul</th>
-        <th scope="col" class="min">Aug</th>
-        <th scope="col" class="min">Sep</th>
-        <th scope="col" class="min">Oct</th>
-        <th scope="col" class="min">Nov</th>
-        <th scope="col" class="min">Dec</th>
-        <th scope="col" class="min">Total</th>
-      </tr>
-    </thead>
-    <tbody class="table-group-divider">
-      {% for categorizedSpending in categorizedSpendings %}
-      <tr class="text-end">
-        <th class="text-start">{{ categorizedSpending.category }}</th>
-        <td>{{ categorizedSpending.monthlyTotals.1|floatformat:2 }}</td>
-        <td>{{ categorizedSpending.monthlyTotals.2|floatformat:2 }}</td>
-        <td>{{ categorizedSpending.monthlyTotals.3|floatformat:2 }}</td>
-        <td>{{ categorizedSpending.monthlyTotals.4|floatformat:2 }}</td>
-        <td>{{ categorizedSpending.monthlyTotals.5|floatformat:2 }}</td>
-        <td>{{ categorizedSpending.monthlyTotals.6|floatformat:2 }}</td>
-        <td>{{ categorizedSpending.monthlyTotals.7|floatformat:2 }}</td>
-        <td>{{ categorizedSpending.monthlyTotals.8|floatformat:2 }}</td>
-        <td>{{ categorizedSpending.monthlyTotals.9|floatformat:2 }}</td>
-        <td>{{ categorizedSpending.monthlyTotals.10|floatformat:2 }}</td>
-        <td>{{ categorizedSpending.monthlyTotals.11|floatformat:2 }}</td>
-        <td>{{ categorizedSpending.monthlyTotals.12|floatformat:2 }}</td>
-        <th>{{ categorizedSpending.yearlyTotalOfCategory|floatformat:2 }}</th>
-      </tr>
-      {% endfor %}
-    </tbody>
-    <tfoot class="table-group-divider">
-      <tr>
-          <td colspan="13" class="text-end"><b>Yearly total</b></td>
-          <td class="text-end"><b>{{ yearlyTotal|floatformat:2 }}</b></td>
-      </tr>
-    </tfoot>
-  </table> 
+<div class="container">
 
+{% if categorizedSpendings|length != 0 %}  
+<table class="table table-hover">
+  <thead>
+    <tr class="text-end">
+      <th scope="col" class="col-10 text-start">Category</th>
+      <th scope="col" class="col-2 text-end">Total</th>
+    </tr>
+  </thead>
+  <tbody class="table-group-divider">
+    {% for categorizedSpending in categorizedSpendings %}
+    <tr class="text-end">
+      <td class="text-start">
+        <div class="accordion" id="accordion{{ forloop.counter0 }}">
+          <div class="accordion-item">
+            
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter0 }}" aria-expanded="false" aria-controls="collapse{{ forloop.counter0 }}">
+                {{ categorizedSpending.category }}
+              </button>
+            </h2>
+            
+            <div id="collapse{{ forloop.counter0 }}" class="accordion-collapse collapse" data-bs-parent="#accordion{{ forloop.counter0 }}">
+              <div class="accordion-body">
+
+                <table class="table">
+                  <thead>
+                    <tr class="text-end">
+                      <th class="col-1">Jan</th>
+                      <th class="col-1">Feb</th>
+                      <th class="col-1">Mar</th>
+                      <th class="col-1">Apr</th>
+                      <th class="col-1">May</th>
+                      <th class="col-1">Jun</th>
+                      <th class="col-1">Jul</th>
+                      <th class="col-1">Aug</th>
+                      <th class="col-1">Sep</th>
+                      <th class="col-1">Oct</th>
+                      <th class="col-1">Nov</th>
+                      <th class="col-1">Dec</th>
+                    </tr>
+                  </thead>
+                  <tbody class="table-group-divider">
+                    <tr class="text-end">
+                      <td>{{ categorizedSpending.monthlyTotals.1|floatformat:2 }}</td>
+                      <td>{{ categorizedSpending.monthlyTotals.2|floatformat:2 }}</td>
+                      <td>{{ categorizedSpending.monthlyTotals.3|floatformat:2 }}</td>
+                      <td>{{ categorizedSpending.monthlyTotals.4|floatformat:2 }}</td>
+                      <td>{{ categorizedSpending.monthlyTotals.5|floatformat:2 }}</td>
+                      <td>{{ categorizedSpending.monthlyTotals.6|floatformat:2 }}</td>
+                      <td>{{ categorizedSpending.monthlyTotals.7|floatformat:2 }}</td>
+                      <td>{{ categorizedSpending.monthlyTotals.8|floatformat:2 }}</td>
+                      <td>{{ categorizedSpending.monthlyTotals.9|floatformat:2 }}</td>
+                      <td>{{ categorizedSpending.monthlyTotals.10|floatformat:2 }}</td>
+                      <td>{{ categorizedSpending.monthlyTotals.11|floatformat:2 }}</td>
+                      <td>{{ categorizedSpending.monthlyTotals.12|floatformat:2 }}</td>
+                    </tr>
+                  </tbody>
+                </table>     
+              </div>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td class="text-end">{{ categorizedSpending.yearlyTotalOfCategory|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot class="table-group-divider">
+    <th class="text-end">Yearly total</th>
+    <th class="text-end">{{ yearlyTotal|floatformat:2 }}</th>
+  </tfoot>
+</table>
 {% else %}
-<p>No entries this year</p>
+<p>No spendings found</p>
 {% endif %}
+
+</div>
 
 {% endblock %}
