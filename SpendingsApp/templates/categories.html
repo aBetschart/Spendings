@@ -28,7 +28,7 @@
         <div class="row">
             {% for category in category_group %}
             <div class="col col-4 mb-3">
-                <a class="btn btn-outline-primary w-100" href="{% url 'category_edit' category.id %}">
+                <a class="btn btn-outline-secondary w-100" href="{% url 'category_edit' category.id %}">
                     {{ category.name }}
                 </a>
             </div>
