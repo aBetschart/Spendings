@@ -10,7 +10,7 @@
       {% csrf_token %}
       <div class="row">
         <div class="col">
-          {{ yearForm.year }}
+          {{ year_form.year }}
         </div>
         <div class="col">
           <input type="submit" class="btn btn-secondary form-control" name="request-month-overview" value="Show">
@@ -24,7 +24,7 @@
 
 <div class="container">
 
-{% if categorizedSpendings|length != 0 %}  
+{% if categorized_spendings|length != 0 %}  
 <table class="table table-hover">
   <thead>
     <tr class="text-end">
@@ -33,7 +33,7 @@
     </tr>
   </thead>
   <tbody class="table-group-divider">
-    {% for categorizedSpending in categorizedSpendings %}
+    {% for categorized_spending in categorized_spendings %}
     <tr class="text-end">
       <td class="text-start">
         <div class="accordion" id="accordion{{ forloop.counter0 }}">
@@ -41,7 +41,7 @@
             
             <h2 class="accordion-header">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter0 }}" aria-expanded="false" aria-controls="collapse{{ forloop.counter0 }}">
-                {{ categorizedSpending.category }}
+                {{ categorized_spending.category_name }}
               </button>
             </h2>
             
@@ -67,18 +67,18 @@
                   </thead>
                   <tbody class="table-group-divider">
                     <tr class="text-end">
-                      <td>{{ categorizedSpending.monthlyTotals.1|floatformat:2 }}</td>
-                      <td>{{ categorizedSpending.monthlyTotals.2|floatformat:2 }}</td>
-                      <td>{{ categorizedSpending.monthlyTotals.3|floatformat:2 }}</td>
-                      <td>{{ categorizedSpending.monthlyTotals.4|floatformat:2 }}</td>
-                      <td>{{ categorizedSpending.monthlyTotals.5|floatformat:2 }}</td>
-                      <td>{{ categorizedSpending.monthlyTotals.6|floatformat:2 }}</td>
-                      <td>{{ categorizedSpending.monthlyTotals.7|floatformat:2 }}</td>
-                      <td>{{ categorizedSpending.monthlyTotals.8|floatformat:2 }}</td>
-                      <td>{{ categorizedSpending.monthlyTotals.9|floatformat:2 }}</td>
-                      <td>{{ categorizedSpending.monthlyTotals.10|floatformat:2 }}</td>
-                      <td>{{ categorizedSpending.monthlyTotals.11|floatformat:2 }}</td>
-                      <td>{{ categorizedSpending.monthlyTotals.12|floatformat:2 }}</td>
+                      <td>{{ categorized_spending.monthly_totals.1|floatformat:2 }}</td>
+                      <td>{{ categorized_spending.monthly_totals.2|floatformat:2 }}</td>
+                      <td>{{ categorized_spending.monthly_totals.3|floatformat:2 }}</td>
+                      <td>{{ categorized_spending.monthly_totals.4|floatformat:2 }}</td>
+                      <td>{{ categorized_spending.monthly_totals.5|floatformat:2 }}</td>
+                      <td>{{ categorized_spending.monthly_totals.6|floatformat:2 }}</td>
+                      <td>{{ categorized_spending.monthly_totals.7|floatformat:2 }}</td>
+                      <td>{{ categorized_spending.monthly_totals.8|floatformat:2 }}</td>
+                      <td>{{ categorized_spending.monthly_totals.9|floatformat:2 }}</td>
+                      <td>{{ categorized_spending.monthly_totals.10|floatformat:2 }}</td>
+                      <td>{{ categorized_spending.monthly_totals.11|floatformat:2 }}</td>
+                      <td>{{ categorized_spending.monthly_totals.12|floatformat:2 }}</td>
                     </tr>
                   </tbody>
                 </table>     
@@ -87,13 +87,13 @@
           </div>
         </div>
       </td>
-      <td class="text-end">{{ categorizedSpending.yearlyTotalOfCategory|floatformat:2 }}</td>
+      <td class="text-end">{{ categorized_spending.yearly_total|floatformat:2 }}</td>
     </tr>
     {% endfor %}
   </tbody>
   <tfoot class="table-group-divider">
     <th class="text-end">Yearly total</th>
-    <th class="text-end">{{ yearlyTotal|floatformat:2 }}</th>
+    <th class="text-end">{{ yearly_total|floatformat:2 }}</th>
   </tfoot>
 </table>
 {% else %}
