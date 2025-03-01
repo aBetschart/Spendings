@@ -1,0 +1,14 @@
+$primary: #7B24D2;
+$secondary: #A4A6F3;
+
+@import "../SpendingsApp/static/scss/_functions";
+@import "../SpendingsApp/static/scss/_variables";
+
+$custom-theme-colors: (
+    "altlight": #bbadff,
+    "altdark": #4e148c
+);
+
+$theme-colors: map-merge($map1: $theme-colors, $map2: $custom-theme-colors);
+
+@import '../SpendingsApp/static/scss/bootstrap'
