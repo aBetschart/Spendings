@@ -1,25 +1,27 @@
 from typing import Dict, List
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.forms.models import model_to_dict
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import render, redirect
 from .models import Category, Spending
 from .forms import SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
 
 import calendar
 from datetime import datetime
+from http import HTTPStatus
 
 DEFAULT_RECENT_SPENDINGS_COUNT = 10
 
 def home(request: HttpRequest):
-    spendingForm = SpendingForm()
-    recentSpendings = get_recent_spendings(DEFAULT_RECENT_SPENDINGS_COUNT)
+    spending_form = SpendingForm()
+    recent_spendings = get_recent_spendings(DEFAULT_RECENT_SPENDINGS_COUNT)
 
     args = {
-        'spendingForm': spendingForm,
-        'spendings': recentSpendings,
+        'spendingForm': spending_form,
+        'spendings': recent_spendings,
     }
     return render(request, 'home.html', args)
 
-def get_recent_spendings(numberOfSpendings: int):
+def get_recent_spendings(numberOfSpendings: int) -> List[Spending]:
     order = '-entryDate'
     return Spending.objects.order_by(order)[:numberOfSpendings]
 
@@ -30,22 +32,26 @@ def spending_submit(request: HttpRequest):
             new_spending.save()
     return redirect('home')
 
-def spending_submit_api(request: HttpRequest):
+def spending_submit_api(request: HttpRequest) -> HttpResponse:
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(permitted_methods=['POST'])
+
     data = {}
-    status = 200
+    status = HTTPStatus.OK.value
 
-    if request.method == 'POST':
-        post_data = request.POST.dict()
-        id = convert_to_category_id(post_data['category'])
-        post_data['category'] = id
+    post_data = request.POST.dict()
+    id = convert_to_category_id(post_data['category'])
+    post_data['category'] = id
 
-        form = SpendingForm(data=post_data)
-        if form.is_valid():
-            save_new_spending(form.cleaned_data)
-            data["message"] = "Spending entered"
-        else:
-            data["errors"] = form.errors
-            status = 400
+    form = SpendingForm(data=post_data)
+    if form.is_valid():
+        print("is valid")
+        save_new_spending(form.cleaned_data)
+        data["message"] = "Spending entered"
+    else:
+        print(form.errors)
+        data["errors"] = form.errors
+        status = HTTPStatus.BAD_REQUEST
 
     return JsonResponse(data, status=status)
 
@@ -72,36 +78,25 @@ def spending_get_recent_api(request: HttpRequest):
     data = {}
     status = 200
 
-    if request.method == 'GET':
-        queryData = request.GET
-        try:
-            spendingsCount = int(queryData['numberOfSpendings'])
-        except:
-            spendingsCount = DEFAULT_RECENT_SPENDINGS_COUNT
-        
-        spendings = get_recent_spendings(spendingsCount)
-        data['spendings'] = form_spendings_response(spendings)
-    else:
-        data = {'message': 'Only GET here'}
-        status = 400
+    query_data = request.POST
+    try:
+        spendingsCount = int(query_data['spendings_count'])
+    except:
+        spendingsCount = DEFAULT_RECENT_SPENDINGS_COUNT
+    
+    spendings = get_recent_spendings(spendingsCount)
+    data['spendings'] = form_spendings_response(spendings)
 
     return JsonResponse(data, status=status)
 
-def form_spendings_response(spendings):
-    spendingResponse = []
+def form_spendings_response(spendings: List[Spending]) -> List[Dict[str, any]]:
+    response_spendings: List[Dict[str, any]] = []
     for spending in spendings:
-        spendingDict = spending_to_dict(spending)
-        spendingResponse.append(spendingDict)
-    return spendingResponse
-
-def spending_to_dict(spending: Spending) -> Dict[str, any]:
-    return {
-        'id': spending.id,
-        'spendingDate': spending.spendingDate,
-        'description': spending.description,
-        'amount': spending.amount,
-        'category': {'id': spending.category.pk, 'name': spending.category.name},
-    }
+        spending_dict = model_to_dict(spending)
+        spending_dict['category'] = model_to_dict(spending.category)
+        spending_dict['entryDate'] = spending.entryDate
+        response_spendings.append(spending_dict)
+    return response_spendings
 
 def spending_edit(request: HttpRequest, id: int):
     spending = Spending.objects.get(id=id)
