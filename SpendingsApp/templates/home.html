@@ -8,7 +8,7 @@
     <br>
     
     
-    <form action="{% url 'spending_submit' %}" method="POST">
+    <form id="submit-spending-form" action="{% url 'spending_submit' %}" method="POST">
         {% csrf_token %}
         <div class="form-group">
             <div class="row mb-3">
@@ -33,7 +33,10 @@
         </div>
         <div class="row mb-3">
             <div class="col">
-                <input type="submit" class="btn btn-secondary form-control" name="submit-spending" value="Submit">
+                <button id="submit-spending-api-btn" class="btn btn-secondary w-100">Submit over API</button>
+            </div>
+            <div class="col">
+                <input id="submit-spending-btn" type="submit" class="btn btn-secondary" name="submit-spending" value="Submit">
             </div>
         </div>
     </form>
@@ -44,25 +47,25 @@
     
     {% if spendings|length != 0 %}
     
-    <table id="table-spendings" class="table table-striped">
+    <table id="table-spendings" class="table table-striped" style="table-layout: fixed;">
         <thead>
             <tr>
-                <th scope="col" class="col-xs-1">Date</th>
-                <th>Category</th>
-                <th>Description</th>
-                <th class="text-end">Amount</th>
+                <th style="width: 12%;" scope="col" class="col-xs-1">Date</th>
+                <th style="width: 25%;">Category</th>
+                <th style="width: 50%;">Description</th>
+                <th style="width: 13%;" class="text-end">Amount</th>
             </tr>
         </thead>
         <tbody class="table-group-divider">
             {% for spending in spendings %}
             <tr>
-                <td>
+                <td class="text-nowrap text-truncate">
                     {{ spending.spendingDate }}
                 </td>
-                <td>
+                <td class="text-nowrap text-truncate">
                     {{ spending.category }}
                 </td>
-                <td>
+                <td class="text-nowrap text-truncate">
                     {{ spending.description }}
                 </td>
                 <td class="text-end">
@@ -81,8 +84,5 @@
     <p>No entries found</p>
     {% endif %}
 </div>
-
-{% load static %}
-<script src="{% static 'js/today.js' %}"></script>
 
 {% endblock %}
