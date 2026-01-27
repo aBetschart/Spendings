@@ -14,6 +14,13 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     
+    <script>
+      const DJANGO_URLS = {
+          spending_submit_api: "{% url 'spending_submit_api' %}",
+          spending_get_recent: "{% url 'spending_get_recent' %}"
+      };
+    </script>
+
     <script src="{% static 'js/dateFormat.js'%}"></script>
     <script src="{% static 'js/jquery-dateformat.js' %}"></script>
     <script src="{% static 'js/update_recent_spendings.js' %}"></script>

@@ -5,7 +5,7 @@ function updateRecentSpendings() {
         datatype: "json",
         contenttype: "application/json",
         data: {spendings_count: 10, csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},
-        url: 'spending/get/recent',
+        url: DJANGO_URLS.spending_get_recent,
         success: function(data) {
             $('#table-spendings tbody').empty();
 
@@ -70,19 +70,19 @@ function submitSpendingToAPI() {
     
     $.ajax({
         type: "POST",
-        url: 'spending/submit/api',
+        url: DJANGO_URLS.spending_submit_api,
         data: formData,
         processData: false,
         contentType: false,
         success: function(data) {
             console.log("Spending submitted successfully:", data);
-            // Clear the form
             $("#submit-spending-form")[0].reset();
-            // Refresh the recent spendings table
             updateRecentSpendings();
         },
-        error: function(error) {
-            console.error("Error submitting spending:", error);
+        error: function(xhr, status, error) {
+            console.error("Error status:", xhr.status);
+            console.error("Error response:", xhr.responseText);
+            console.error("Error message:", error);
             alert("Error submitting spending. Please check the console.");
         }
     });

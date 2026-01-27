@@ -37,15 +37,15 @@ def spending_submit_api(request: HttpRequest) -> HttpResponse:
         return HttpResponseNotAllowed(permitted_methods=['POST'])
 
     data = {}
-    status = HTTPStatus.OK.value
+    status = HTTPStatus.OK
 
     post_data = request.POST.dict()
-    id = convert_to_category_id(post_data['category'])
-    post_data['category'] = id
+    form = convert_submit_post_data_to_form(post_data)
 
-    form = SpendingForm(data=post_data)
+    if not form.is_valid():
+        
+
     if form.is_valid():
-        print("is valid")
         save_new_spending(form.cleaned_data)
         data["message"] = "Spending entered"
     else:
@@ -54,6 +54,12 @@ def spending_submit_api(request: HttpRequest) -> HttpResponse:
         status = HTTPStatus.BAD_REQUEST
 
     return JsonResponse(data, status=status)
+
+def convert_submit_post_data_to_form(post_data: dict):
+    id = convert_to_category_id(post_data['category'])
+    post_data['category'] = id
+    return SpendingForm(data=post_data)
+
 
 def convert_to_category_id(category):
     try:
