@@ -93,6 +93,19 @@ def save_new_spending(data: Dict[str, any]):
     newSpending.save()
 
 
+def spending_delete_api(request: HttpRequest, id: int) -> HttpResponse:
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(permitted_methods=['POST'])
+    
+    try:
+        spending = Spending.objects.get(pk=id)
+    except Spending.DoesNotExist:
+        return JsonResponse({"errors": "Spending not found"}, status=HTTPStatus.NOT_FOUND)
+
+    spending.delete()
+    return JsonResponse({"message": "Spending deleted"}, status=HTTPStatus.OK)
+
+
 def spending_edit(request: HttpRequest, id: int):
     spending = Spending.objects.get(id=id)
     if request.method == 'POST':
