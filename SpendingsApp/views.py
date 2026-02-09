@@ -51,14 +51,6 @@ def form_spendings_response(spendings: List[Spending]) -> List[Dict[str, any]]:
     return response_spendings
 
 
-def spending_submit(request: HttpRequest):
-    if request.method == 'POST':
-        new_spending = SpendingForm(data=request.POST)
-        if new_spending.is_valid():
-            new_spending.save()
-    return redirect('home')
-
-
 def spending_submit_api(request: HttpRequest) -> HttpResponse:
     if request.method != 'POST':
         return HttpResponseNotAllowed(permitted_methods=['POST'])

@@ -27,7 +27,7 @@
         </div>
         <div class="row mb-3">
             <div class="col">
-                <button type="button" id="edit-spending-api-button" class="btn btn-secondary form-control">Edit (API)</button>
+                <button type="button" id="edit-spending-api-button" class="btn btn-secondary form-control">Edit</button>
             </div>
             <div class="col">
                 <input type="submit" class="btn btn-danger form-control" name="delete-spending" value="Delete">
@@ -41,5 +41,6 @@
 
 {% block extra_scripts %}
 {% load static %}
+<script src="{% static 'js/spending-form-validation.js' %}"></script>
 <script src="{% static 'js/edit-spending.js' %}"></script>
 {% endblock %}

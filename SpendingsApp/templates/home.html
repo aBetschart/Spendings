@@ -8,7 +8,7 @@
     <br>
     
     
-    <form id="submit-spending-form" action="{% url 'spending_submit' %}" method="POST">
+    <form id="submit-spending-form" action="" method="POST">
         {% csrf_token %}
         <div class="form-group">
             <div class="row mb-3">
@@ -54,26 +54,6 @@
             </tr>
         </thead>
         <tbody class="table-group-divider">
-            {% for spending in spendings %}
-            <tr>
-                <td class="text-nowrap text-truncate">
-                    {{ spending.spendingDate }}
-                </td>
-                <td class="text-nowrap text-truncate">
-                    {{ spending.category }}
-                </td>
-                <td class="text-nowrap text-truncate">
-                    {{ spending.description }}
-                </td>
-                <td class="text-end">
-                    <a 
-                        class="link-underline link-underline-opacity-0" 
-                        href="{% url 'spending_edit' spending.id %}">
-                        {{ spending.amount|floatformat:2 }}
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
         </tbody>
     </table>
     
@@ -86,5 +66,7 @@
 
 {% block extra_scripts %}
 {% load static %}
-<script src="{% static 'js/update_recent_spendings.js' %}"></script>
+<script src="{% static 'js/spending-form-validation.js' %}"></script>
+<script src="{% static 'js/update-recent-spendings.js' %}"></script>
+<script src="{% static 'js/submit-spending.js' %}"></script>
 {% endblock %}
