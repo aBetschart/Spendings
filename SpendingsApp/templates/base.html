@@ -17,18 +17,22 @@
     <script>
       const DJANGO_URLS = {
           spending_submit_api: "{% url 'spending_submit_api' %}",
-          spending_get_recent: "{% url 'spending_get_recent' %}"
+          spending_get_recent: "{% url 'spending_get_recent' %}",
+          spending_edit_api: "{% if spending %}{% url 'spending_edit_api' spending.id %}{% endif %}"
       };
     </script>
 
     <script src="{% static 'js/dateFormat.js'%}"></script>
     <script src="{% static 'js/jquery-dateformat.js' %}"></script>
-    <script src="{% static 'js/update_recent_spendings.js' %}"></script>
-    <script src="{% static 'js/today.js' %}"></script>
+    <script src="{% static 'js/today.js'%}"></script>
   
     <title>Spendings</title>
-  </head>
+
+    {% block extra_head %}{% endblock %}
+
+  </head> 
   <body>
+
     {% include 'navbar.html' %}
 
     <br>
@@ -40,5 +44,8 @@
 
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    {% block extra_scripts %}{% endblock %}
+
   </body>
 </html>

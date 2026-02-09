@@ -11,7 +11,7 @@ from http import HTTPStatus
 
 DEFAULT_RECENT_SPENDINGS_COUNT = 10
 
-def home(request: HttpRequest):
+def home(request: HttpRequest) -> HttpResponse:
     spending_form = SpendingForm()
     recent_spendings = get_recent_spendings(DEFAULT_RECENT_SPENDINGS_COUNT)
 
@@ -21,9 +21,35 @@ def home(request: HttpRequest):
     }
     return render(request, 'home.html', args)
 
+
 def get_recent_spendings(numberOfSpendings: int) -> List[Spending]:
     order = '-entryDate'
     return Spending.objects.order_by(order)[:numberOfSpendings]
+
+
+def spending_get_recent_api(request: HttpRequest):
+    query_data = request.POST
+    try:
+        spendingsCount = int(query_data['spendings_count'])
+    except:
+        spendingsCount = DEFAULT_RECENT_SPENDINGS_COUNT
+    
+    data = {}
+    spendings = get_recent_spendings(spendingsCount)
+    data['spendings'] = form_spendings_response(spendings)
+
+    return JsonResponse(data, status=HTTPStatus.OK)
+
+
+def form_spendings_response(spendings: List[Spending]) -> List[Dict[str, any]]:
+    response_spendings: List[Dict[str, any]] = []
+    for spending in spendings:
+        spending_dict = model_to_dict(spending)
+        spending_dict['category'] = model_to_dict(spending.category)
+        spending_dict['entryDate'] = spending.entryDate
+        response_spendings.append(spending_dict)
+    return response_spendings
+
 
 def spending_submit(request: HttpRequest):
     if request.method == 'POST':
@@ -31,6 +57,7 @@ def spending_submit(request: HttpRequest):
         if new_spending.is_valid():
             new_spending.save()
     return redirect('home')
+
 
 def spending_submit_api(request: HttpRequest) -> HttpResponse:
     if request.method != 'POST':
@@ -42,20 +69,19 @@ def spending_submit_api(request: HttpRequest) -> HttpResponse:
     if not form.is_valid():
         data = { "errors": form.errors }
         return JsonResponse(data=data, status=HTTPStatus.BAD_REQUEST)
-
     
     save_new_spending(form.cleaned_data)
     data = { "message": "Spending submitted" }
     return JsonResponse(data, status=HTTPStatus.OK)
 
 
-def convert_submit_post_data_to_form(post_data: dict):
+def convert_submit_post_data_to_form(post_data: dict) -> SpendingForm:
     id = convert_to_category_id(post_data['category'])
     post_data['category'] = id
     return SpendingForm(data=post_data)
 
 
-def convert_to_category_id(category):
+def convert_to_category_id(category: any) -> int:
     try:
         id = int(category)
     except:
@@ -65,6 +91,7 @@ def convert_to_category_id(category):
     
     return id
 
+
 def save_new_spending(data: Dict[str, any]):
     spendingDate = data['spendingDate']
     description = data['description']
@@ -73,30 +100,6 @@ def save_new_spending(data: Dict[str, any]):
     newSpending = Spending(spendingDate=spendingDate, description=description, amount=amount, category=category)
     newSpending.save()
 
-
-def spending_get_recent_api(request: HttpRequest):
-    data = {}
-    status = 200
-
-    query_data = request.POST
-    try:
-        spendingsCount = int(query_data['spendings_count'])
-    except:
-        spendingsCount = DEFAULT_RECENT_SPENDINGS_COUNT
-    
-    spendings = get_recent_spendings(spendingsCount)
-    data['spendings'] = form_spendings_response(spendings)
-
-    return JsonResponse(data, status=status)
-
-def form_spendings_response(spendings: List[Spending]) -> List[Dict[str, any]]:
-    response_spendings: List[Dict[str, any]] = []
-    for spending in spendings:
-        spending_dict = model_to_dict(spending)
-        spending_dict['category'] = model_to_dict(spending.category)
-        spending_dict['entryDate'] = spending.entryDate
-        response_spendings.append(spending_dict)
-    return response_spendings
 
 def spending_edit(request: HttpRequest, id: int):
     spending = Spending.objects.get(id=id)
@@ -116,6 +119,34 @@ def spending_edit(request: HttpRequest, id: int):
     }
     return render(request, 'spending.html', args)
 
+
+def spending_edit_api(request: HttpRequest, id: int) -> HttpResponse:
+    if request.method != "POST":
+        return HttpResponseNotAllowed(permitted_methods=['POST'])
+
+    post_data = request.POST.dict()
+
+    try:
+        spending = Spending.objects.get(pk=id)
+    except Spending.DoesNotExist:
+        return JsonResponse({"errors": "Spending not found"}, status=HTTPStatus.NOT_FOUND)
+
+    if 'category' in post_data:
+        post_data['category'] = convert_to_category_id(post_data['category'])
+
+    edited_form = SpendingForm(data=post_data, instance=spending)
+    if not edited_form.is_valid():
+        return JsonResponse({"errors": edited_form.errors}, status=HTTPStatus.BAD_REQUEST)
+
+    edited_form.save()
+
+    spending_dict = model_to_dict(spending)
+    spending_dict['category'] = model_to_dict(spending.category)
+    spending_dict['entryDate'] = spending.entryDate
+
+    return JsonResponse({"message": "Spending edited", "spending": spending_dict}, status=HTTPStatus.OK)
+
+
 def categories(request: HttpRequest):
     if request.method == 'POST':
         filledForm = CategoryForm(data=request.POST)
@@ -130,6 +161,7 @@ def categories(request: HttpRequest):
         'categories': categories,
     }
     return render(request, 'categories.html', args)
+
 
 def category_edit(request: HttpRequest, id: int):
     category = Category.objects.get(pk=id)
@@ -148,6 +180,7 @@ def category_edit(request: HttpRequest, id: int):
     }
     return render(request, "category.html", args)
 
+
 def category_delete(request: HttpRequest, id: int):
     category = Category.objects.get(id=id)
     category.delete()
@@ -158,6 +191,7 @@ def category_delete(request: HttpRequest, id: int):
         'categories': categories,
     }
     return render(request, 'categories.html', args)
+
 
 def monthly_overview(request: HttpRequest):
     month_of_year = datetime.now()
@@ -180,6 +214,7 @@ def monthly_overview(request: HttpRequest):
     }
     return render(request, 'month.html', args)
 
+
 def setup_month_form(month_of_year: datetime) -> MonthlyOverviewForm:
     monthIndex = month_of_year.month - 1
     initial = {
@@ -188,15 +223,18 @@ def setup_month_form(month_of_year: datetime) -> MonthlyOverviewForm:
     }
     return MonthlyOverviewForm(initial=initial)
 
+
 def extract_month_of_year(month_form: MonthlyOverviewForm) -> datetime:
     month_name = str(month_form.cleaned_data['month'])
     month = month_name_to_number(month_name)
     year = int(month_form.cleaned_data['year'])
     return datetime(day=1, month=month, year=year)
 
+
 def month_name_to_number(monthName: str) -> int:
     cleanMonthName = monthName[0].upper() + monthName[1:].lower()
     return list(calendar.month_name).index(cleanMonthName)
+
 
 def get_spendings_of_month(month: datetime) -> List[Spending]:
     start = get_first_day_of_month(month)
@@ -204,18 +242,22 @@ def get_spendings_of_month(month: datetime) -> List[Spending]:
     order = '-spendingDate'
     return Spending.objects.filter(spendingDate__gte=start, spendingDate__lte=end).order_by(order)
 
+
 def get_first_day_of_month(month: datetime) -> datetime:
     return datetime(year=month.year, month=month.month, day=1)
+
 
 def get_last_day_of_month(month: datetime) -> datetime:
     lastDay = calendar.monthrange(month.year, month.month)[1]
     return datetime(year=month.year, month=month.month, day=lastDay)
+
 
 def calculate_total(spendings: List[Spending]) -> float:
     sum = 0
     for spending in spendings:
         sum += spending.amount
     return sum
+
 
 class YearlyCategorizedSpending():
     year: int
@@ -238,6 +280,7 @@ class YearlyCategorizedSpending():
             11: 0,
             12: 0,
         }
+
 
 def yearly_overview(request: HttpRequest):
     year = datetime.now().year
@@ -262,6 +305,7 @@ def yearly_overview(request: HttpRequest):
     }
     return render(request, "year.html", args)
 
+
 def get_categorized_spendings(year: int) -> List[YearlyCategorizedSpending]:
     categorized_spendings: List[YearlyCategorizedSpending] = []
     categories = Category.objects.order_by('name')
@@ -270,6 +314,7 @@ def get_categorized_spendings(year: int) -> List[YearlyCategorizedSpending]:
         categorized_spendings.append(yearlySpending)
 
     return categorized_spendings
+
 
 def get_yearly_spending(year: int, category: Category) -> YearlyCategorizedSpending:
     yearly_spending = YearlyCategorizedSpending()
@@ -284,17 +329,20 @@ def get_yearly_spending(year: int, category: Category) -> YearlyCategorizedSpend
     yearly_spending.yearly_total = yearly_total
     return yearly_spending
 
+
 def get_monthly_spendings_from_category(category: Category, month: int, year: int) -> List[Spending]:
     month_of_year = datetime(day=1, month=month, year=year)
     first = get_first_day_of_month(month_of_year)
     last = get_last_day_of_month(month_of_year)
     return Spending.objects.filter(spendingDate__gte=first, spendingDate__lte=last, category=category)
 
+
 def calc_yearly_total_of_category(yearly_spending: YearlyCategorizedSpending) -> float:
     yearly_total = 0
     for month in range(1, 13):
         yearly_total += yearly_spending.monthly_totals[month]
     return yearly_total
+
 
 def calculate_yearly_total(categorized_spendings: List[YearlyCategorizedSpending]) -> float:
     yearly_total = 0

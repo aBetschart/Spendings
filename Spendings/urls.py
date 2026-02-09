@@ -25,6 +25,7 @@ urlpatterns = [
     path('spending/submit/api', views.spending_submit_api, name='spending_submit_api'),
     path('spending/get/recent', views.spending_get_recent_api, name='spending_get_recent'),
     path('spending/edit/<int:id>', views.spending_edit, name='spending_edit'),
+    path('spending/edit/api/<int:id>', views.spending_edit_api, name='spending_edit_api'),
     path('categories', views.categories, name='categories'),
     path('categories/edit/<int:id>', views.category_edit, name='category_edit'),
     path('categories/delete/<int:id>', views.category_delete, name='category_delete'),

@@ -27,10 +27,6 @@ function updateRecentSpendings() {
     })
 }
 
-function postSpending() {
-
-}
-
 $(document).ready(function() {
     $("#submit-spending-form").validate({
         rules: {

@@ -33,10 +33,7 @@
         </div>
         <div class="row mb-3">
             <div class="col">
-                <button type="button" id="submit-spending-api-btn" class="btn btn-secondary w-100">Submit over API</button>
-            </div>
-            <div class="col">
-                <input type="submit" id="submit-spending-btn" class="btn btn-secondary" name="submit-spending" value="Submit">
+                <button type="button" id="submit-spending-api-btn" class="btn btn-secondary w-100">Submit</button>
             </div>
         </div>
     </form>
@@ -85,4 +82,9 @@
     {% endif %}
 </div>
 
+{% endblock %}
+
+{% block extra_scripts %}
+{% load static %}
+<script src="{% static 'js/update_recent_spendings.js' %}"></script>
 {% endblock %}

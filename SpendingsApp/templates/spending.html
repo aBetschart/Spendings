@@ -7,7 +7,7 @@
     <h2>Edit spending</h2>
     <br>
 
-    <form action="" method="post">
+    <form id="edit-spending-form" action="" method="post" data-edit-url="{% url 'spending_edit_api' spendingForm.instance.id %}">
         {% csrf_token %}
         <div class="row mb-3">
             <div class="col">
@@ -27,7 +27,7 @@
         </div>
         <div class="row mb-3">
             <div class="col">
-                <input type="submit" class="btn btn-secondary form-control" name="edit-spending" value="Edit">
+                <button type="button" id="edit-spending-api-button" class="btn btn-secondary form-control">Edit (API)</button>
             </div>
             <div class="col">
                 <input type="submit" class="btn btn-danger form-control" name="delete-spending" value="Delete">
@@ -37,4 +37,9 @@
 
 </div>
 
+{% endblock %}
+
+{% block extra_scripts %}
+{% load static %}
+<script src="{% static 'js/edit-spending.js' %}"></script>
 {% endblock %}
