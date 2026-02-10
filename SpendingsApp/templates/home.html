@@ -33,7 +33,9 @@
         </div>
         <div class="row mb-3">
             <div class="col">
-                <button type="button" id="submit-spending-api-btn" class="btn btn-secondary w-100">Submit</button>
+                <button type="button" id="submit-spending-api-btn" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-database-add"></i>
+                </button>
             </div>
         </div>
     </form>
@@ -47,10 +49,12 @@
     <table id="table-spendings" class="table table-striped" style="table-layout: fixed;">
         <thead>
             <tr>
-                <th style="width: 12%;" scope="col" class="col-xs-1">Date</th>
-                <th style="width: 25%;">Category</th>
-                <th style="width: 50%;">Description</th>
+                <th style="width: 9%;" scope="col" class="col-xs-1">Date</th>
+                <th style="width: 23%;">Category</th>
+                <th style="width: 49%;">Description</th>
                 <th style="width: 13%;" class="text-end">Amount</th>
+                <th style="width: 3%;" class="text-end"></th>
+                <th style="width: 3%;" class="text-end"></th>
             </tr>
         </thead>
         <tbody class="table-group-divider">
@@ -69,4 +73,5 @@
 <script src="{% static 'js/spending-form-validation.js' %}"></script>
 <script src="{% static 'js/update-recent-spendings.js' %}"></script>
 <script src="{% static 'js/submit-spending.js' %}"></script>
+<script src="{% static 'js/delete-spending.js' %}"></script>
 {% endblock %}
