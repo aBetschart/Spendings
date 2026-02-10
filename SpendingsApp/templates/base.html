@@ -14,11 +14,13 @@
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src=" https://cdn.jsdelivr.net/npm/date-fns@4.1.0/cdn.min.js "></script>
     
     <script>
       const DJANGO_URLS = {
           spending_submit_api: "{% url 'spending_submit_api' %}",
           spending_get_recent: "{% url 'spending_get_recent' %}",
+          spending_get: "{% url 'spending_get' %}",
           spending_edit_api: "{% if spending %}{% url 'spending_edit_api' spending.id %}{% endif %}"
       };
     </script>

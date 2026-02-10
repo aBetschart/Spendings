@@ -224,23 +224,14 @@ def category_delete(request: HttpRequest, id: int):
 
 
 def monthly_overview(request: HttpRequest):
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(permitted_methods=['GET'])
+
     month_of_year = datetime.now()
     month_form = setup_month_form(month_of_year)
-
-    if request.method == 'POST':
-        filled_form = MonthlyOverviewForm(data=request.POST)
-        if not filled_form.is_valid():
-            return HttpResponseBadRequest("Invalid form request")
-        
-        month_form = filled_form
-        month_of_year = extract_month_of_year(month_form)
     
-    monthly_spendings = get_spendings_of_month(month_of_year)
-    monthly_total = calculate_total(monthly_spendings)
     args = {
         'monthForm': month_form,
-        'monthlySpendings': monthly_spendings,
-        'total': monthly_total,
     }
     return render(request, 'month.html', args)
 

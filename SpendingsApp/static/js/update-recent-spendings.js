@@ -14,10 +14,13 @@ function updateRecentSpendings() {
                 const date = new Date(spending.spendingDate);
                 const date_text = $.format.date(date, "dd.MM.yyyy")
                 
-                const edit_link = `spending/edit/${spending.id}`;
-                const editButton = `<a href='${edit_link}' class='btn btn-sm py-0 px-1 btn-outline-secondary'><i class='bi bi-pencil'></i></a>`;
+                const buttonClasses = "btn btn-sm py-0 px-1";
+                const editLink = `spending/edit/${spending.id}`;
+                const editButton = `<a href='${editLink}' class='${buttonClasses} btn-outline-secondary'><i class='bi bi-pencil'></i></a>`;
 
-                const deleteButton = `<button class='btn btn-sm py-0 px-1 btn-outline-danger delete-spending-btn' data-spending-id='${spending.id}'><i class='bi bi-trash'></i></button>`;
+                const deleteIcon = "<i class='bi bi-trash'></i>"
+                const deleteButtonClasses = `${buttonClasses} btn-outline-danger delete-spending-btn`;
+                const deleteButton = `<button class='${deleteButtonClasses}' data-spending-id='${spending.id}'>${deleteIcon}</button>`;
 
                 const date_cell = `<td class='text-nowrap text-truncate'>${date_text}</td>`;
                 const category_cell = `<td class='text-nowrap text-truncate'>${spending.category.name}</td>`;
