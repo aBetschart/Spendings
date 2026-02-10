@@ -23,6 +23,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('spending/submit/api', views.spending_submit_api, name='spending_submit_api'),
     path('spending/get/recent', views.spending_get_recent_api, name='spending_get_recent'),
+    path('spending/get/', views.spending_get, name='spending_get'),
     path('spending/delete/api/<int:id>', views.spending_delete_api, name='spending_delete_api'),
     path('spending/edit/<int:id>', views.spending_edit, name='spending_edit'),
     path('spending/edit/api/<int:id>', views.spending_edit_api, name='spending_edit_api'),

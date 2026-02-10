@@ -6,7 +6,7 @@ from .models import Category, Spending
 from .forms import SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
 
 import calendar
-from datetime import datetime
+from datetime import datetime, date
 from http import HTTPStatus
 
 DEFAULT_RECENT_SPENDINGS_COUNT = 10
@@ -25,6 +25,31 @@ def home(request: HttpRequest) -> HttpResponse:
 def get_recent_spendings(numberOfSpendings: int) -> List[Spending]:
     order = '-entryDate'
     return Spending.objects.order_by(order)[:numberOfSpendings]
+
+def spending_get(request: HttpRequest) -> HttpResponse:
+    if not request.method == 'GET':
+        return HttpResponseNotAllowed(permitted_methods=['GET'])
+    
+    request_data = request.GET.dict()
+    try:
+        start_date_param = request_data['start_date']
+        end_date_param = request_data['end_date']
+    except KeyError:
+        return HttpResponseBadRequest("Missing required parameters: start_date or/and end_date")
+
+    try:
+        start_date = date.fromisoformat(start_date_param)
+        end_date = date.fromisoformat(end_date_param)
+    except ValueError:
+        return HttpResponseBadRequest("Invalid date format. Expected ISO format: YYYY-MM-DD")
+    
+    if start_date > end_date:
+        return HttpResponseBadRequest("Start date cannot be after end date")
+
+    spendings = Spending.objects.filter(spendingDate__gte=start_date, spendingDate__lte=end_date).order_by('-spendingDate')
+
+    data = { 'spendings': form_spendings_response(spendings) }
+    return JsonResponse(data, status=HTTPStatus.OK)
 
 
 def spending_get_recent_api(request: HttpRequest):
@@ -67,7 +92,7 @@ def spending_submit_api(request: HttpRequest) -> HttpResponse:
     return JsonResponse(data, status=HTTPStatus.OK)
 
 
-def convert_submit_post_data_to_form(post_data: dict) -> SpendingForm:
+def convert_submit_post_data_to_form(post_data: Dict[str, any]) -> SpendingForm:
     id = convert_to_category_id(post_data['category'])
     post_data['category'] = id
     return SpendingForm(data=post_data)
