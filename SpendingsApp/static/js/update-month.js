@@ -1,8 +1,12 @@
 (function(){
     function renderMonthTable(spendings){
+        const table = document.getElementById('month-spendings-table');
         const tbody = document.getElementById('month-spendings-tbody');
-        if(!tbody) return;
+        if(!tbody || !table) return;
+
         tbody.innerHTML = '';
+        if (table.querySelector('tfoot')) 
+            table.querySelector('tfoot').remove();
 
         if(!spendings || spendings.length === 0){
             const tr = document.createElement('tr');
@@ -11,7 +15,7 @@
             const iElment = document.createElement('i');
             iElment.className = 'bi bi-emoji-frown-fill';
 
-            td.colSpan = 4;
+            td.colSpan = 6;
             td.textContent = 'No entries found ';
             td.appendChild(iElment);
             
@@ -37,16 +41,39 @@
 
             const amountTd = document.createElement('td');
             amountTd.className = 'text-end';
-            const a = document.createElement('a');
-            a.className = 'link-underline link-underline-opacity-0';
-            a.href = 'spending/edit/' + spending.id;
-            a.textContent = Number(spending.amount).toFixed(2);
-            amountTd.appendChild(a);
+            amountTd.textContent = Number(spending.amount).toFixed(2);
+
+            const editLink = `spending/edit/${spending.id}`;
+    
+            const buttonClasses = "btn btn-sm py-0 px-1";
+            const editButton = document.createElement('a');
+            editButton.href = editLink;
+            editButton.className = `${buttonClasses} btn-outline-secondary`;
+            const editIcon = document.createElement('i');
+            editIcon.className = 'bi bi-pencil';
+            editButton.appendChild(editIcon);
+            
+
+            const deleteButton = document.createElement('button');
+            deleteButton.className = `${buttonClasses} btn-outline-danger delete-spending-btn`;
+            deleteButton.dataset.spendingId = spending.id;
+            
+            const deleteIcon = document.createElement('i');
+            deleteIcon.className = 'bi bi-trash';
+            
+            editTd = document.createElement('td');
+            editTd.appendChild(editButton);
+
+            deleteButton.appendChild(deleteIcon);
+            deleteTd = document.createElement('td');
+            deleteTd.appendChild(deleteButton);
 
             tr.appendChild(dateTd);
             tr.appendChild(categoryTd);
             tr.appendChild(descriptionTd);
             tr.appendChild(amountTd);
+            tr.appendChild(editTd);
+            tr.appendChild(deleteTd);
 
             tbody.appendChild(tr);
         });
@@ -66,13 +93,16 @@
         const totalAmount = extract_total(spendings);
         totalAmountTd.textContent = totalAmount.toFixed(2);
         
+        const backTd = document.createElement('td');
+        backTd.colSpan = 2;
+
         totalTr.appendChild(totalLabelTd);
         totalTr.appendChild(totalAmountTd);
+        totalTr.appendChild(backTd);
+        
         tfoot.appendChild(totalTr);
 
-        table = document.getElementById('month-spendings-table');
-        if (table) 
-            table.appendChild(tfoot);
+        table.appendChild(tfoot);
     }
 
     function extract_total(spendings) {
@@ -128,7 +158,5 @@
     }
 
     document.addEventListener('DOMContentLoaded', wireMonthForm);
-
-    // expose helper for other modules if needed
     window.fetchSpendingsForMonth = fetchSpendingsForMonth;
 })();
