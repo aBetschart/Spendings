@@ -7,26 +7,24 @@
     <h2>Edit Category</h2>
     <br>
 
-    <form action="" method="post">
+    <form id="category-form" method="post" url="{% url 'category_edit_api' categoryForm.instance.id %}">
         {% csrf_token %}
-        <div class="row mb-3">
+        <div class="row">
             <div class="col">
                 {{ categoryForm.name }}
             </div>
-        </div>
-        <div class="row mb-3">
             <div class="col">
-                <button type="submit" class="form-control btn btn-outline-secondary w-100" name="edit-category" value="Rename">
+                <button type="submit" class="form-control btn btn-outline-secondary w-100" >
                     <i class="bi bi-save"></i>
-                </button>
-            </div>
-            <div class="col">
-                <button type="submit" class="form-control btn btn-outline-danger" name="delete-category" value="Delete">
-                    <i class="bi bi-trash"></i>
                 </button>
             </div>
         </div>
     </form>
 </div>
 
+{% endblock %}
+
+{% block extra_scripts %}
+{% load static %}
+<script type="module" src="{% static 'js/category-edit.js' %}"></script>
 {% endblock %}

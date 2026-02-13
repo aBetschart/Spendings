@@ -3,11 +3,11 @@ import { categoryTableUpdate } from './category-table-update.js';
 
 $(document).ready(function() {
 
-    validateCategoryForm("#category-post-form");
+    validateCategoryForm("#category-form");
 
     $("#category-submit-btn").mouseup(function(e) {
         e.preventDefault();
-        if (!$("#category-post-form").valid())
+        if (!$("#category-form").valid())
             return;
 
         const formElement = document.getElementById('category-post-form');
@@ -15,7 +15,7 @@ $(document).ready(function() {
 
         $.ajax({
             type: "POST",
-            url: formElement.action,
+            url: "category/post/",
             data: formData,
             processData: false,
             contentType: false,
