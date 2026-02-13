@@ -71,7 +71,7 @@
 {% block extra_scripts %}
 {% load static %}
 <script src="{% static 'js/spending-form-validation.js' %}"></script>
-<script src="{% static 'js/update-recent-spendings.js' %}"></script>
+<script type="module" src="{% static 'js/update-recent-spendings.js' %}"></script>
 <script src="{% static 'js/submit-spending.js' %}"></script>
 <script src="{% static 'js/delete-spending.js' %}"></script>
 {% endblock %}

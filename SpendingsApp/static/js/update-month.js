@@ -1,12 +1,12 @@
+import { renderSpendingsTbody } from './render-spendings-tbody.js';
+
 (function(){
     function renderMonthTable(spendings){
         const table = document.getElementById('month-spendings-table');
         const tbody = document.getElementById('month-spendings-tbody');
         if(!tbody || !table) return;
 
-        tbody.innerHTML = '';
-        if (table.querySelector('tfoot')) 
-            table.querySelector('tfoot').remove();
+        if (table.querySelector('tfoot')) table.querySelector('tfoot').remove();
 
         if(!spendings || spendings.length === 0){
             const tr = document.createElement('tr');
@@ -20,64 +20,19 @@
             td.appendChild(iElment);
             
             tr.appendChild(td);
-            
+
+            tbody.innerHTML = '';
             tbody.appendChild(tr);
             
             return;
         }
 
-        spendings.forEach(function(spending) {
-            const tr = document.createElement('tr');
+        const newTbody = renderSpendingsTbody(spendings);
+        newTbody.id = tbody.id;
+        newTbody.className = tbody.className;
+        tbody.replaceWith(newTbody);
 
-            const dateTd = document.createElement('td');
-            const d = new Date(spending.spendingDate);
-            dateTd.textContent = d.toLocaleDateString();
-
-            const categoryTd = document.createElement('td');
-            categoryTd.textContent = spending.category.name;
-
-            const descriptionTd = document.createElement('td');
-            descriptionTd.textContent = spending.description;
-
-            const amountTd = document.createElement('td');
-            amountTd.className = 'text-end';
-            amountTd.textContent = Number(spending.amount).toFixed(2);
-
-            const editLink = `spending/edit/${spending.id}`;
-    
-            const buttonClasses = "btn btn-sm py-0 px-1";
-            const editButton = document.createElement('a');
-            editButton.href = editLink;
-            editButton.className = `${buttonClasses} btn-outline-secondary`;
-            const editIcon = document.createElement('i');
-            editIcon.className = 'bi bi-pencil';
-            editButton.appendChild(editIcon);
-            
-
-            const deleteButton = document.createElement('button');
-            deleteButton.className = `${buttonClasses} btn-outline-danger delete-spending-btn`;
-            deleteButton.dataset.spendingId = spending.id;
-            
-            const deleteIcon = document.createElement('i');
-            deleteIcon.className = 'bi bi-trash';
-            
-            editTd = document.createElement('td');
-            editTd.appendChild(editButton);
-
-            deleteButton.appendChild(deleteIcon);
-            deleteTd = document.createElement('td');
-            deleteTd.appendChild(deleteButton);
-
-            tr.appendChild(dateTd);
-            tr.appendChild(categoryTd);
-            tr.appendChild(descriptionTd);
-            tr.appendChild(amountTd);
-            tr.appendChild(editTd);
-            tr.appendChild(deleteTd);
-
-            tbody.appendChild(tr);
-        });
-
+        
         const tfoot = document.createElement('tfoot');
         tfoot.className = 'table-group-divider';
 
