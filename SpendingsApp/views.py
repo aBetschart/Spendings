@@ -21,6 +21,9 @@ def home(request: HttpRequest) -> HttpResponse:
     }
     return render(request, 'home.html', args)
 
+# ------------------------------------------------------
+# ------------------------- SPENDING  ------------------
+# ------------------------------------------------------
 
 def get_recent_spendings(numberOfSpendings: int) -> List[Spending]:
     order = '-entryDate'
@@ -176,6 +179,71 @@ def spending_edit_api(request: HttpRequest, id: int) -> HttpResponse:
 
     return JsonResponse({"message": "Spending edited", "spending": spending_dict}, status=HTTPStatus.OK)
 
+# ------------------------------------------------------
+# ------------------------- CATEGORY  ------------------
+# ------------------------------------------------------
+
+def category_post(request: HttpRequest) -> HttpResponse:
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(permitted_methods=['POST'])
+    
+    filledForm = CategoryForm(data=request.POST)
+    if not filledForm.is_valid():
+        return JsonResponse({"errors": filledForm.errors}, status=HTTPStatus.BAD_REQUEST)
+
+    newCategory = filledForm.save()
+    category_dict = model_to_dict(newCategory)
+    return JsonResponse({"message": "Category created", "category": category_dict}, status=HTTPStatus.OK)
+
+
+def category_get(request: HttpRequest) -> HttpResponse:
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(permitted_methods=['GET'])
+    
+    categories = Category.objects.order_by('name')
+    categories_dicts = [model_to_dict(category) for category in categories]
+    return JsonResponse({"categories": categories_dicts}, status=HTTPStatus.OK)
+
+
+def category_edit_api(request: HttpRequest, id: int) -> HttpResponse:
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(permitted_methods=['POST'])
+    
+    try:
+        category = Category.objects.get(pk=id)
+    except Category.DoesNotExist:
+        return JsonResponse({"errors": "Category not found"}, status=HTTPStatus.NOT_FOUND)
+
+    edited_form = CategoryForm(data=request.POST, instance=category)
+    if not edited_form.is_valid():
+        return JsonResponse({"errors": edited_form.errors}, status=HTTPStatus.BAD_REQUEST)
+
+    edited_form.save()
+    category_dict = model_to_dict(category)
+    return JsonResponse({"message": "Category edited", "category": category_dict}, status=HTTPStatus.OK)
+
+
+def category_delete_api(request: HttpRequest, id: int) -> HttpResponse:
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(permitted_methods=['POST'])
+    
+    try:
+        category = Category.objects.get(pk=id)
+    except Category.DoesNotExist:
+        return JsonResponse({"errors": "Category not found"}, status=HTTPStatus.NOT_FOUND)
+
+    if is_category_used(category):
+        message = "Category is used by existing spendings and cannot be deleted"
+        return JsonResponse({"errors": message}, status=HTTPStatus.BAD_REQUEST)
+
+    category.delete()
+    return JsonResponse({"message": "Category deleted"}, status=HTTPStatus.OK)
+
+
+def is_category_used(category: Category) -> bool:
+    spendings = Spending.objects.filter(category=category)
+    return spendings.exists()
+
 
 def categories(request: HttpRequest):
     if request.method == 'POST':
@@ -222,6 +290,11 @@ def category_delete(request: HttpRequest, id: int):
     }
     return render(request, 'categories.html', args)
 
+
+
+# ------------------------------------------------------
+# ------------------------- MONTH  ---------------------
+# ------------------------------------------------------
 
 def monthly_overview(request: HttpRequest):
     if request.method != 'GET':

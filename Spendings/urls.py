@@ -32,6 +32,11 @@ urlpatterns = [
     path('categories', views.categories, name='categories'),
     path('categories/edit/<int:id>', views.category_edit, name='category_edit'),
     path('categories/delete/<int:id>', views.category_delete, name='category_delete'),
+
+    path('category/post', views.category_post, name='category_post'),
+    path('category/get', views.category_get, name='category_get'),
+    path('category/edit/api/<int:id>', views.category_edit_api, name='category_edit_api'),
+    path('category/delete/api/<int:id>', views.category_delete_api, name='category_delete_api'),
     
     path('month', views.monthly_overview, name='monthly_overview'),
     path('year', views.yearly_overview, name='yearly_overview'),
