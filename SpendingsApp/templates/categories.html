@@ -3,42 +3,37 @@
 {% block content %}
 
 <div class="container">
-    <h2>Categories</h2>
-    
-    <br>
-    
-    <form action="{% url 'categories' %}" method="post">
-        {% csrf_token %}
-        <div class="row">
-            <div class="col col-8">
-                {{ categoryForm.name }}
+    <div class="container" style="width: 50%;">
+        <h2>Categories</h2>
+        
+        <br>
+        
+        <form id="category-post-form" action="{% url 'categories' %}" method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col col-8">
+                    {{ categoryForm.name }}
+                </div>
+                <div class="col col-4">
+                    <button id="category-submit-btn" type="submit" class="form-control btn btn-secondary" name="submit-new-category" value="Add">
+                        <i class="bi bi-folder-plus"></i>
+                    </button>
+                </div>
             </div>
-            <div class="col col-4">
-                <button type="submit" class="form-control btn btn-secondary" name="submit-new-category" value="Add">
-                    <i class="bi bi-folder-plus"></i>
-                </button>
-            </div>
-        </div>
-    </form>
+        </form>
+    </div>
     
     <br>
 
-    <div class="text-center">
-        {% load spendings_tags %}
-        {% with categories|split_to_group_size:3 as category_groups %}
-        {% for category_group in category_groups %}
-        <div class="row">
-            {% for category in category_group %}
-            <div class="col col-4 mb-3">
-                <a class="btn btn-outline-secondary w-100" href="{% url 'category_edit' category.id %}">
-                    {{ category.name }}
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-        {% endfor %}
-        {% endwith %}
+    <div class="container" style="width: 50%;">
+        <table id="category-table" class="table table-striped"></table>
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_scripts %}
+{% load static %}
+<script type="module" src="{% static 'js/category-post.js' %}"></script>
+<script type="module" src="{% static 'js/category-view.js' %}"></script>
 {% endblock %}
