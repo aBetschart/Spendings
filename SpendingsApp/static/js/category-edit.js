@@ -1,12 +1,18 @@
 
+import { validateCategoryForm } from "./category-form-validate.js";
+
+$(document).ready(function() {
+    validateCategoryForm("#category-form");
+});
+
 $("#category-form").submit(function(event) {
     event.preventDefault();
 
     const $form = $(this);
 
-    if (typeof $form.valid === 'function' && !$form.valid()) {
+    if (typeof $form.valid === 'function' && !$form.valid()) 
         return;
-    }
+    
 
     const formData = new FormData(this);
     const url = $form.attr("url");
