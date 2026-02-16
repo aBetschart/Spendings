@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <div id="form-container" class="container">
+        <h2>Filter Spendings</h2>
+        
+        <br>
+
+        <form id="filter-form">
+            {% csrf_token %}
+            <div class="row mb-3">
+                <div class="col">
+                    {{ spendingFilterForm.start_date }}
+                </div>
+                <div class="col">
+                    {{ spendingFilterForm.end_date }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {{ spendingFilterForm.min_amount }}
+                </div>
+                <div class="col">
+                    {{ spendingFilterForm.max_amount }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {{ spendingFilterForm.categories }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    {{ spendingFilterForm.description }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <button id="filter-btn" type="submit" class="form-control btn btn-outline-secondary">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+</div>
+
+<br>
+
+<div id="spendings-container" class="container">
+    <table id="spendings-table" class="table table-striped">
+        <thead>
+            <tr>
+                <th style="width: 9%;" scope="col" class="col-xs-1">Date</th>
+                <th style="width: 23%;">Category</th>
+                <th style="width: 49%;">Description</th>
+                <th style="width: 13%;" class="text-end">Amount</th>
+                <th style="width: 3%;" class="text-end"></th>
+                <th style="width: 3%;" class="text-end"></th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+{% load static %}
+<script type="module" src="{% static 'js/filter-view.js' %}"></script>
+<script type="module" src="{% static 'js/category-form-validate.js' %}"></script>
+{% endblock %}

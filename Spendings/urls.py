@@ -21,6 +21,7 @@ from SpendingsApp import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
+    path('filter/', views.filter, name='filter'),
     
     path('spending/submit/api', views.spending_submit_api, name='spending_submit_api'),
     path('spending/get/', views.spending_get, name='spending_get'),

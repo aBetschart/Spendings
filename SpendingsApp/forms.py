@@ -12,6 +12,14 @@ class SpendingForm(forms.ModelForm):
             'amount': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Amount'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
         }
+
+class SpendingFilterForm(forms.Form):
+    start_date = forms.DateField(required=True, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'placeholder': 'Start date'}))
+    end_date = forms.DateField(required=True, widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'placeholder': 'End date'}))
+    description = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Description'}))
+    min_amount = forms.FloatField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Min amount'}))
+    max_amount = forms.FloatField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Max amount'}))
+    categories = forms.ModelMultipleChoiceField(queryset=Category.objects.all(), required=False, widget=forms.SelectMultiple(attrs={'class': 'form-control'}))
        
 class CategoryForm(forms.ModelForm):
     class Meta:

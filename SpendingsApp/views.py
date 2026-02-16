@@ -3,7 +3,7 @@ from django.forms.models import model_to_dict
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse, QueryDict
 from django.shortcuts import render, redirect
 from .models import Category, Spending
-from .forms import SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
+from .forms import SpendingFilterForm, SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
 from .src.date_range import DateRange
 
 import sys
@@ -21,6 +21,13 @@ def home(request: HttpRequest) -> HttpResponse:
         'spendingForm': spending_form,
     }
     return render(request, 'home.html', args)
+
+def filter(request: HttpRequest) -> HttpResponse:
+    spending_filter_form = SpendingFilterForm()
+    args = {
+        'spendingFilterForm': spending_filter_form,
+    }
+    return render(request, 'filter.html', args)
 
 # ------------------------------------------------------
 # ------------------------- SPENDING  ------------------
@@ -105,9 +112,9 @@ def extract_categories(request_data: QueryDict) -> List[int]:
     
     categories = request_data.getlist('categories')
     try:
-        category_ids = [int(c) for c in categories]
+        category_ids = [convert_to_category_id(c) for c in categories]
     except Exception:
-        raise ValueError("Category ID(s) must be integers")
+        raise ValueError("Category ID not found")
     
     return category_ids
 
@@ -193,14 +200,14 @@ def convert_submit_post_data_to_form(post_data: Dict[str, any]) -> SpendingForm:
 
 
 def convert_to_category_id(category: any) -> int:
+    if Category.objects.filter(name__iexact=category).exists():
+        category = Category.objects.get(name=category)
+        return category.pk
+
     try:
-        id = int(category)
+        return int(category)
     except:
-        name = category
-        category = Category.objects.get(name=name)
-        id = category.pk
-    
-    return id
+        raise ValueError(f"Invalid category '{category}'. Expected category name or ID")
 
 
 def save_new_spending(data: Dict[str, any]):

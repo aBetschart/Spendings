@@ -18,7 +18,6 @@ const CATEGORY_FORM_MESSAGES = {
 };
 
 export function validateCategoryForm(formId) {
-    // guard if jQuery Validate isn't available (prevents uncaught exception)
     if (typeof $(formId).validate !== 'function') {
         console.warn('jQuery Validate plugin not found — client-side validation disabled for', formId);
         return;
