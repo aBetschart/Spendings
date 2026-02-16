@@ -45,9 +45,7 @@
     
     <h2>Recently submitted</h2>
     <br>
-    
-    {% if spendings|length != 0 %}
-    
+      
     <table id="table-spendings" class="table table-striped" style="table-layout: fixed;">
         <thead>
             <tr>
@@ -62,10 +60,6 @@
         <tbody class="table-group-divider">
         </tbody>
     </table>
-    
-    {% else %}
-    <p>No entries found</p>
-    {% endif %}
 </div>
 
 {% endblock %}
