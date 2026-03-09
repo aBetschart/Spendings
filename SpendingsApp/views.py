@@ -72,6 +72,7 @@ def get_filtered_spendings(filter_params):
     end_date = date_range.end
     spendings = Spending.objects.filter(spendingDate__gte=start_date, spendingDate__lte=end_date)
 
+    print(filter_params.categories)
     if filter_params.categories != []:
         spendings = spendings.filter(category__in=filter_params.categories)
 
