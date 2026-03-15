@@ -8,7 +8,7 @@
 
 <br>
 
-<form action="{% url 'monthly_overview' %}" method="post">
+<form id="month-form" action="{% url 'monthly_overview' %}" method="post">
     {% csrf_token %}
     <div class="form-group">
         <div class="row">
@@ -19,58 +19,34 @@
                 {{ monthForm.year }}
             </div>
             <div class="col">
-                <input type="submit" class="btn btn-secondary form-control" name="request-month-overview" value="Show">
+                <button type="submit" name="request-month-overview" class="btn btn-outline-secondary form-control">
+                    <i class="bi bi-search"></i>
+                </button>
             </div>
         </div>
     </div>
 </form>
 
 <br>
-
-    {% if monthlySpendings|length != 0 %}
-    <table class="table table-striped">
+    <table id="month-spendings-table" class="table table-striped">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Category</th>
-                <th>Description</th>
-                <th class="text-end">Amount</th>
+                <th style="width: 9%;" scope="col" class="col-xs-1">Date</th>
+                <th style="width: 23%;">Category</th>
+                <th style="width: 49%;">Description</th>
+                <th style="width: 13%;" class="text-end">Amount</th>
+                <th style="width: 3%;" class="text-end"></th>
+                <th style="width: 3%;" class="text-end"></th>
             </tr>
         </thead>
-        <tbody class="table-group-divider">
-            {% for spending in monthlySpendings %}
-            <tr>
-                <td>
-                    {{ spending.spendingDate }}
-                </td>
-                <td>
-                    {{ spending.category }}
-                </td>
-                <td>
-                    {{ spending.description }}
-                </td>
-                <td class="text-end">
-                    <a 
-                        class="link-underline link-underline-opacity-0" 
-                        href="{% url 'spending_edit' spending.id %}">
-                        {{ spending.amount|floatformat:2 }}
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-            <tfoot class="table-group-divider">
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <th class="text-end">Total</td>
-                    <th class="text-end">{{ total|floatformat:2 }}</td>
-                </tr>
-            </tfoot>
-        </tbody>
+        <tbody id="month-spendings-tbody" class="table-group-divider"></tbody>
     </table>
-    {% else %}
-    <p>No entries found</p>
-    {% endif %}
 </div>
 
+{% endblock %}
+
+{% block extra_scripts %}
+{% load static %}
+<script type="module" src="{% static 'js/update-month.js' %}"></script>
+<script src="{% static 'js/delete-spending.js' %}"></script>
 {% endblock %}

@@ -8,7 +8,7 @@
     <br>
     
     
-    <form id="submit-spending-form" action="{% url 'spending_submit' %}" method="POST">
+    <form id="submit-spending-form" action="" method="POST">
         {% csrf_token %}
         <div class="form-group">
             <div class="row mb-3">
@@ -16,7 +16,9 @@
                     {{ spendingForm.spendingDate }}
                 </div>
                 <div class="col-2">
-                    <button type="button" class="btn btn-outline-secondary form-control" onclick="insertTodaysDate(document.getElementById('id_spendingDate'))">today</button>
+                    <button type="button" class="btn btn-outline-secondary form-control" onclick="insertTodaysDate(document.getElementById('id_spendingDate'))">
+                        <i class="bi bi-calendar-event"></i>
+                    </button>
                 </div>
                 <div class="col-6">
                     {{ spendingForm.description }}
@@ -33,10 +35,9 @@
         </div>
         <div class="row mb-3">
             <div class="col">
-                <button id="submit-spending-api-btn" class="btn btn-secondary w-100">Submit over API</button>
-            </div>
-            <div class="col">
-                <input id="submit-spending-btn" type="submit" class="btn btn-secondary" name="submit-spending" value="Submit">
+                <button type="button" id="submit-spending-api-btn" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-database-add"></i>
+                </button>
             </div>
         </div>
     </form>
@@ -44,45 +45,29 @@
     
     <h2>Recently submitted</h2>
     <br>
-    
-    {% if spendings|length != 0 %}
-    
+      
     <table id="table-spendings" class="table table-striped" style="table-layout: fixed;">
         <thead>
             <tr>
-                <th style="width: 12%;" scope="col" class="col-xs-1">Date</th>
-                <th style="width: 25%;">Category</th>
-                <th style="width: 50%;">Description</th>
+                <th style="width: 9%;" scope="col" class="col-xs-1">Date</th>
+                <th style="width: 23%;">Category</th>
+                <th style="width: 49%;">Description</th>
                 <th style="width: 13%;" class="text-end">Amount</th>
+                <th style="width: 3%;" class="text-end"></th>
+                <th style="width: 3%;" class="text-end"></th>
             </tr>
         </thead>
         <tbody class="table-group-divider">
-            {% for spending in spendings %}
-            <tr>
-                <td class="text-nowrap text-truncate">
-                    {{ spending.spendingDate }}
-                </td>
-                <td class="text-nowrap text-truncate">
-                    {{ spending.category }}
-                </td>
-                <td class="text-nowrap text-truncate">
-                    {{ spending.description }}
-                </td>
-                <td class="text-end">
-                    <a 
-                        class="link-underline link-underline-opacity-0" 
-                        href="{% url 'spending_edit' spending.id %}">
-                        {{ spending.amount|floatformat:2 }}
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
         </tbody>
     </table>
-    
-    {% else %}
-    <p>No entries found</p>
-    {% endif %}
 </div>
 
+{% endblock %}
+
+{% block extra_scripts %}
+{% load static %}
+<script src="{% static 'js/spending-form-validation.js' %}"></script>
+<script type="module" src="{% static 'js/update-recent-spendings.js' %}"></script>
+<script src="{% static 'js/submit-spending.js' %}"></script>
+<script src="{% static 'js/delete-spending.js' %}"></script>
 {% endblock %}
