@@ -1,10 +1,13 @@
+
+import { updateRecentSpendings } from './update-recent-spendings.js';
+
 $(document).ready(function() {
     validateSpendingForm("#submit-spending-form");
 
     $('#submit-spending-api-btn').mouseup(function() {
-        if ($("#submit-spending-form").valid()) {
+        if ($("#submit-spending-form").valid())
             submitSpending();
-        }
+            updateRecentSpendings();
     });
 });
 

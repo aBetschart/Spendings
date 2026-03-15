@@ -1,7 +1,7 @@
 
 import { renderSpendingsTbody } from './render-spendings-tbody.js';
 
-function updateRecentSpendings() {
+export function updateRecentSpendings() {
     $.ajax({
         type: "POST",
         datatype: "json",
