@@ -56,6 +56,7 @@ def spending_get(request: HttpRequest) -> HttpResponse:
     if not request.method == 'GET':
         return HttpResponseNotAllowed(permitted_methods=['GET'])
     
+
     try:
         filter_params = extract_filter_params(request.GET)
     except ValueError as e:
@@ -66,13 +67,12 @@ def spending_get(request: HttpRequest) -> HttpResponse:
     data = { 'spendings': form_spendings_response(spendings) }
     return JsonResponse(data, status=HTTPStatus.OK)
 
-def get_filtered_spendings(filter_params):
+def get_filtered_spendings(filter_params: SpendingFilterParams) -> List[Spending]:
     date_range = filter_params.date_range
     start_date = date_range.start
     end_date = date_range.end
     spendings = Spending.objects.filter(spendingDate__gte=start_date, spendingDate__lte=end_date)
 
-    print(filter_params.categories)
     if filter_params.categories != []:
         spendings = spendings.filter(category__in=filter_params.categories)
 
@@ -131,17 +131,17 @@ def extract_amount_range(request_data: Dict[str, any]) -> AmountRange:
 
     return AmountRange(min=min_amount, max=max_amount)
 
-def extract_description(request_data: Dict[str, any]) -> str:
-    if 'description' not in request_data:
-        return ""
-    
-    return request_data['description']
-
 def parse_amount(amount_str: str) -> float:
     try:
         return float(amount_str)
     except ValueError:
         raise ValueError("Invalid amount format. Expected a number")
+
+def extract_description(request_data: Dict[str, any]) -> str:
+    if 'description' not in request_data:
+        return ""
+    
+    return request_data['description']
 
 def form_spendings_response(spendings: List[Spending]) -> List[Dict[str, any]]:
     response_spendings: List[Dict[str, any]] = []

@@ -22,7 +22,8 @@ const VALIDATION_RULES = {
     "max_amount": {
         required: false,
         number: true,
-        min: 0.01
+        min: 0.01,
+        greaterThanMin: true
     },
     "categories": {
         required: false
@@ -48,9 +49,25 @@ const VALIDATION_MESSAGES = {
     },
     "max_amount": {
         number: "Please enter a valid number",
-        min: "Maximum amount must be greater or equal to 0.01"
+        min: "Maximum amount must be greater or equal to 0.01",
+        greaterThanMin: "Maximum amount must be greater than minimum amount"
     },
 };
+
+$.validator.addMethod("greaterThanMin", function(value, _element) {
+    const minAmount = parseFloat($("#id_min_amount").val());
+    const maxAmount = parseFloat(value);
+    
+    if (isNaN(minAmount) || $("#id_min_amount").val().trim() === "")
+        return true;
+    
+    
+    if (isNaN(maxAmount) || value.trim() === "")
+        return true;
+    
+    
+    return maxAmount > minAmount;
+}, "Maximum amount must be greater than minimum amount");
 
 export function validateFilterForm(formId) {
     if (typeof $(formId).validate !== 'function') {

@@ -8,6 +8,10 @@ $(document).ready(function() {
     
     const form = document.getElementById('filter-form');
     form.addEventListener('change', updateSpendings);
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        updateSpendings();
+    });
 });
 
 function prepareFilterForm() {
@@ -23,9 +27,10 @@ function prepareFilterForm() {
 };
 
 async function updateSpendings() {
-    console.log("change");
-
     validateFilterForm("#filter-form");
+    if (!$("#filter-form").valid())
+        return;
+    
 
     const spendings = await fetchSpendings();
     const spendingsCount = spendings.length;
@@ -56,8 +61,17 @@ async function fetchSpendings() {
         filterData.categories = categoryIds;
 
 
-    console.log("Fetching spendings with filter:", filterData);
+    const description = document.getElementById('id_description').value.trim();
+    if (description)
+        filterData.description = description;
+    
+    const minAmount = document.getElementById('id_min_amount').value.trim();
+    if (minAmount)
+        filterData.min_amount = minAmount;
 
+    const maxAmount = document.getElementById('id_max_amount').value.trim();
+    if (maxAmount)
+        filterData.max_amount = maxAmount;
 
     try {
         const data = await $.ajax({
