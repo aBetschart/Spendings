@@ -1,5 +1,5 @@
 
-class MonthlyAccordionRenderer {
+export class MonthlyAccordionRenderer {
 
     render(index, categoryName, monthlyTotals) {
         const accordion = this.#renderBaseAccordion(index, categoryName);
@@ -51,6 +51,7 @@ class MonthlyAccordionRenderer {
 
         const table = document.createElement('table');
         table.classList.add('table');
+        table.id = 'totals-table';
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
         headerRow.classList.add('text-end');
@@ -70,10 +71,13 @@ class MonthlyAccordionRenderer {
         
         monthlyTotals.forEach(total => {
             const td = document.createElement('td');
-            td.textContent = total.toFixed(2);
+            const totalFloat = parseFloat(total);
+            td.textContent = totalFloat.toFixed(2);
             dataRow.appendChild(td);
         });
         tbody.appendChild(dataRow);
         table.appendChild(tbody);
+
+        return table;
     }
 }

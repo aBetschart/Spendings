@@ -55,7 +55,6 @@ class SpendingFilterParams():
 def spending_get(request: HttpRequest) -> HttpResponse:
     if not request.method == 'GET':
         return HttpResponseNotAllowed(permitted_methods=['GET'])
-    
 
     try:
         filter_params = extract_filter_params(request.GET)
@@ -64,7 +63,9 @@ def spending_get(request: HttpRequest) -> HttpResponse:
 
     spendings = get_filtered_spendings(filter_params)
 
-    data = { 'spendings': form_spendings_response(spendings) }
+    total = calculate_total(spendings)
+    spendings_response = form_spendings_response(spendings)
+    data = { 'spendings': spendings_response, 'total': total }
     return JsonResponse(data, status=HTTPStatus.OK)
 
 def get_filtered_spendings(filter_params: SpendingFilterParams) -> List[Spending]:
