@@ -47,8 +47,8 @@ export class YearlyOverviewTableRenderer {
         const thead = document.createElement('thead');
         thead.innerHTML = `
             <tr class="text-start">
-                <th></th>
-                <th class="text-end">Total</th>
+                <th class="col-10"></th>
+                <th class="col-2 text-end">Total</th>
             </tr>`;
         return thead;
     }
