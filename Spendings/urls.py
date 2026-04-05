@@ -23,10 +23,10 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('filter/', views.filter, name='filter'),
     
-    path('spending/submit/api', views.spending_submit_api, name='spending_submit_api'),
+    path('spending/submit/api', views.spending_submit, name='spending_submit_api'),
     path('spending/get/', views.spending_get, name='spending_get'),
-    path('spending/get/recent', views.spending_get_recent_api, name='spending_get_recent'),
-    path('spending/delete/api/<int:id>', views.spending_delete_api, name='spending_delete_api'),
+    path('spending/get/recent', views.spending_get_recent, name='spending_get_recent'),
+    path('spending/delete/api/<int:id>', views.spending_delete, name='spending_delete_api'),
     path('spending/edit/<int:id>', views.spending_edit, name='spending_edit'),
     path('spending/edit/api/<int:id>', views.spending_edit_api, name='spending_edit_api'),
 
