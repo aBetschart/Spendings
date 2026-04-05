@@ -53,8 +53,11 @@ async function renderYearlyOverview() {
     const year = getYearFromForm();
     const categories = await getCategories();
     const categoryReports = await composeCategoryReports(year, categories);
+    const yearlyTotal = categoryReports.reduce((sum, report) => sum + report.yearlyTotal, 0);
+    
     const renderer = new YearlyOverviewTableRenderer();
-    const table = renderer.render(categoryReports);
+    const table = renderer.render(categoryReports, yearlyTotal);
+    
     const container = document.getElementById('yearly-overview-container');
     container.innerHTML = '';
     container.appendChild(table);

@@ -239,7 +239,7 @@ def spending_delete(request: HttpRequest, id: int) -> HttpResponse:
     return JsonResponse({"message": "Spending deleted"}, status=HTTPStatus.OK)
 
 
-def spending_edit(request: HttpRequest, id: int):
+def spending_view(request: HttpRequest, id: int):
     spending = Spending.objects.get(id=id)
     if request.method == 'POST':
         editedSpending = SpendingForm(data=request.POST, instance=spending)
@@ -258,7 +258,7 @@ def spending_edit(request: HttpRequest, id: int):
     return render(request, 'spending.html', args)
 
 
-def spending_edit_api(request: HttpRequest, id: int) -> HttpResponse:
+def spending_edit(request: HttpRequest, id: int) -> HttpResponse:
     if request.method != "POST":
         return HttpResponseNotAllowed(permitted_methods=['POST'])
 
@@ -310,7 +310,7 @@ def category_get(request: HttpRequest) -> HttpResponse:
     return JsonResponse({"categories": categories_dicts}, status=HTTPStatus.OK)
 
 
-def category_edit_api(request: HttpRequest, id: int) -> HttpResponse:
+def category_edit(request: HttpRequest, id: int) -> HttpResponse:
     if request.method != 'POST':
         return HttpResponseNotAllowed(permitted_methods=['POST'])
     
@@ -328,7 +328,7 @@ def category_edit_api(request: HttpRequest, id: int) -> HttpResponse:
     return JsonResponse({"message": "Category edited", "category": category_dict}, status=HTTPStatus.OK)
 
 
-def category_delete_api(request: HttpRequest, id: int) -> HttpResponse:
+def category_delete(request: HttpRequest, id: int) -> HttpResponse:
     if request.method != 'POST':
         return HttpResponseNotAllowed(permitted_methods=['POST'])
     
@@ -366,7 +366,7 @@ def categories(request: HttpRequest):
     return render(request, 'categories.html', args)
 
 
-def category_edit(request: HttpRequest, id: int):
+def category_view(request: HttpRequest, id: int):
     category = Category.objects.get(pk=id)
     if request.method == 'POST':
         editedCategory = CategoryForm(data=request.POST, instance=category)

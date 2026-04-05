@@ -27,17 +27,17 @@ urlpatterns = [
     path('spending/get/', views.spending_get, name='spending_get'),
     path('spending/get/recent', views.spending_get_recent, name='spending_get_recent'),
     path('spending/delete/api/<int:id>', views.spending_delete, name='spending_delete_api'),
-    path('spending/edit/<int:id>', views.spending_edit, name='spending_edit'),
-    path('spending/edit/api/<int:id>', views.spending_edit_api, name='spending_edit_api'),
+    path('spending/edit/<int:id>', views.spending_view, name='spending_edit'),
+    path('spending/edit/api/<int:id>', views.spending_edit, name='spending_edit_api'),
 
     path('categories', views.categories, name='categories'),
-    path('categories/edit/<int:id>', views.category_edit, name='category_edit'),
-    path('categories/delete/<int:id>', views.category_delete, name='category_delete'),
+    path('categories/edit/<int:id>', views.category_view, name='category_edit'),
 
     path('category/post', views.category_post, name='category_post'),
     path('category/get', views.category_get, name='category_get'),
-    path('category/edit/<int:id>', views.category_edit_api, name='category_edit_api'),
-    path('category/delete/<int:id>', views.category_delete_api, name='category_delete_api'),
+    path('categories/delete/<int:id>', views.category_delete, name='category_delete'),
+    path('category/edit/<int:id>', views.category_edit, name='category_edit_api'),
+    path('category/delete/<int:id>', views.category_delete, name='category_delete_api'),
     
     path('month', views.monthly_overview, name='monthly_overview'),
     path('year', views.yearly_overview, name='yearly_overview'),
