@@ -459,7 +459,6 @@ def monthly_average(request: HttpRequest):
         return HttpResponseNotAllowed(permitted_methods=['GET'])
 
     query_data = request.GET.dict()
-    print(query_data)
     try:
         request_data = extract_monthly_average_request_data(query_data)
     except ValueError as e:
