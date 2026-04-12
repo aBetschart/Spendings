@@ -15,11 +15,25 @@ class MonthlyAverageCalculator:
         if year < 0:
             raise ValueError(f"Year cannot be negative but was '{year}'.")
 
-        date_range = self._calc_date_range(year)
-        self._data_gateway.get_spending_amount(date_range, None)
+        if not self._average_possible(year):
+            return 0
 
-        return 1
+        date_range = self._calc_date_range(year)
+        amount = self._data_gateway.get_spending_amount(date_range, category)
+        months_count = self._get_months_count(date_range)
+        return amount / months_count
     
+    def _average_possible(self, requested_year: int) -> bool:
+        today = date.today()
+        if requested_year > today.year:
+            return False
+        
+        if requested_year == today.year:
+            if today.month == 1:
+                return False
+            
+        return True
+
     def _calc_date_range(self, requested_year: int) -> DateRange:
         today = date.today()
         start = date(requested_year, 1, 1)
@@ -30,5 +44,10 @@ class MonthlyAverageCalculator:
         else:
             end = date(today.year, today.month, 1) - timedelta(days=1)
 
-        print(start, end)
         return DateRange(start, end)
+    
+    def _get_months_count(self, date_range: DateRange) -> int:
+        start = date_range.start
+        end = date_range.end
+        return end.month - start.month + 1
+    
