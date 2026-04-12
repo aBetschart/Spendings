@@ -41,4 +41,6 @@ urlpatterns = [
     
     path('month', views.monthly_overview, name='monthly_overview'),
     path('year', views.yearly_overview, name='yearly_overview'),
+
+    path('average/monthly', views.monthly_average, name='monthly_average'),
 ]
