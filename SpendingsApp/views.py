@@ -1,22 +1,20 @@
 
 import sys
 from datetime import datetime, date
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from http import HTTPStatus
 from typing import Dict, List
 
 from django.forms.models import model_to_dict
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse, QueryDict
 from django.shortcuts import render, redirect
-
-from SpendingsApp.finance.category_data import CategoryData
-
 from .models import Category, Spending
 from .forms import SpendingFilterForm, SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
-from .src.date_range import DateRange
 
-from .data_gateways.category_converter import CategoryConverter
-from .data_gateways.finance.monthly_average.monthly_average_database_gateway import MonthlyAverageDatabaseGateway
+from .src.date_range import DateRange
+from .database_gateways.category_converter import CategoryConverter
+from .database_gateways.finance.monthly_average.monthly_average_database_gateway import MonthlyAverageDatabaseGateway
+from .finance.category_data import CategoryData
 from .finance.monthly_average.monthly_average_calculator import MonthlyAverageCalculator
 
 DEFAULT_RECENT_SPENDINGS_COUNT = 10
@@ -461,6 +459,7 @@ def monthly_average(request: HttpRequest):
         return HttpResponseNotAllowed(permitted_methods=['GET'])
 
     query_data = request.GET.dict()
+    print(query_data)
     try:
         request_data = extract_monthly_average_request_data(query_data)
     except ValueError as e:
@@ -475,7 +474,7 @@ def monthly_average(request: HttpRequest):
     
     data = {
         'average': average,
-        'category': category,
+        'category': asdict(category_data),
         'year': request_data.year,
     }
     return JsonResponse(data, status=HTTPStatus.OK)
@@ -493,8 +492,9 @@ def extract_monthly_average_request_data(query_data: Dict[str, any]) -> MonthlyA
         raise ValueError("Missing required parameter: category")
     
     category_converter = CategoryConverter()
+    queried_category = query_data['category']
     try:
-        category = category_converter.convert_to_category(query_data['category'])
+        category = category_converter.convert_to_category(queried_category)
     except ValueError as e:
         raise ValueError(str(e))
 

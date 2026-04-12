@@ -13,3 +13,4 @@ class CategoryData:
     
     def __repr__(self):
         return f"CategoryData(id={self.id}, name='{self.name}')"
+    

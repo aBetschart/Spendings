@@ -1,11 +1,14 @@
 
 import { MonthlyAccordionRenderer } from "./monthly-accordion-renderer.js";
 
+const LOCALE = 'de-CH'
+
 export class CategoryReport {
-    constructor(categoryName, monthlyTotals, yearlyTotal) {
+    constructor(categoryName, monthlyTotals, yearlyTotal, average) {
         this.categoryName = categoryName;
         this.monthlyTotals = monthlyTotals;
         this.yearlyTotal = yearlyTotal
+        this.average = average
     }
 }
 
@@ -49,17 +52,19 @@ export class YearlyOverviewTableRenderer {
         categoryReports.forEach((report, index) => {
             const accordion = this.accordionRenderer.render(index, report.categoryName, report.monthlyTotals);
 
+            const average = parseFloat(report.average);
             const yearlyTotal = parseFloat(report.yearlyTotal);
+
             const row = document.createElement('tr');
             row.innerHTML = `
                     <td class="text-start">
                         ${accordion.outerHTML}
                     </td>
                     <td class="text-end">
-                        0.00
+                        ${this.#renderMonetaryValue(average)}
                     </td>
                     <td class="text-end">
-                        ${yearlyTotal.toFixed(2)}
+                        ${this.#renderMonetaryValue(yearlyTotal)}
                     </td>
                 `;
 
@@ -68,14 +73,17 @@ export class YearlyOverviewTableRenderer {
         return tbody;
     }
 
+    #renderMonetaryValue(value) {
+        return value.toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
     #renderTableFooter(yearlyTotal) {
         const tfoot = document.createElement('tfoot');
         tfoot.classList.add('table-group-divider');
-        const totalString = yearlyTotal.toLocaleString('de-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         tfoot.innerHTML = `
                 <tr>
                     <td colspan="2" class="text-end"></td>
-                    <td class="text-end"><strong>${totalString}</strong></td>
+                    <td class="text-end"><strong>${this.#renderMonetaryValue(yearlyTotal)}</strong></td>
                 </tr>
             `;
         return tfoot;

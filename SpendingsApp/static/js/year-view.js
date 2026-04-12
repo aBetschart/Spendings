@@ -21,7 +21,7 @@ async function updateYearlyOverview() {
     showLoader();
 
     try {
-        await renderYearlyOverview();    
+        await renderYearlyOverview();
     }
     catch (error) {
         console.error("Error rendering yearly overview:", error);
@@ -91,7 +91,8 @@ async function composeCategoryReport(year, category) {
         Array.from({length: 12}, (_, month) => fetchMonthlyTotal(year, month, category))
     );
     const yearlyTotal = monthlyTotals.reduce((sum, total) => sum + total, 0);
-    return new CategoryReport(category.name, monthlyTotals, yearlyTotal);
+    const average = await Promise.resolve(fetchMonthlyAverage(year, category))
+    return new CategoryReport(category.name, monthlyTotals, yearlyTotal, average);
 }
 
 async function fetchMonthlyTotal(year, month, category) {
@@ -111,6 +112,20 @@ async function fetchMonthlyTotal(year, month, category) {
                 end_date: isoLastDay
             }});
     return parseFloat(data.total);
+}
+
+async function fetchMonthlyAverage(year, category) {
+    const data = await $.ajax({
+            type: 'GET',
+            url: DJANGO_URLS.monthly_average,
+            dataType: "json",
+            traditional: true,
+            data: {
+                year: year,
+                category: category.id
+            }
+        });
+    return parseFloat(data.average)
 }
 
 function renderError() {
