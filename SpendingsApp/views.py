@@ -298,11 +298,11 @@ def category_post(request: HttpRequest) -> HttpResponse:
     if request.method != 'POST':
         return HttpResponseNotAllowed(permitted_methods=['POST'])
     
-    filledForm = CategoryForm(data=request.POST)
-    if not filledForm.is_valid():
-        return JsonResponse({"errors": filledForm.errors}, status=HTTPStatus.BAD_REQUEST)
+    filter_form = CategoryForm(data=request.POST)
+    if not filter_form.is_valid():
+        return JsonResponse({"errors": filter_form.errors}, status=HTTPStatus.BAD_REQUEST)
 
-    newCategory = filledForm.save()
+    newCategory = filter_form.save()
     category_dict = model_to_dict(newCategory)
     return JsonResponse({"message": "Category created", "category": category_dict}, status=HTTPStatus.OK)
 
