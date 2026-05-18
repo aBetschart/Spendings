@@ -1,9 +1,10 @@
 
+import sys
+import pytest
 from typing import List
 from datetime import date
 
-import pytest
-
+from SpendingsApp.filtering.spending_filtering.spending_filter_data import AmountRange
 from SpendingsApp.filtering.spending_filtering.spending_filter_extractor import SpendingFilterExtractor
 from SpendingsApp.filtering.spending_filtering.spending_filter_request_data import SpendingFilterRequestData
 
@@ -63,7 +64,7 @@ def test_extract_shouldRaiseException_IfStartDateIsNotIsoFormat(extractor: Spend
     ("2024-06-01", "2024-06-30", date(2024, 6, 1), date(2024, 6, 30)),
     ("1999-01-12", "2042-12-31", date(1999, 1, 12), date(2042, 12, 31))
 ])
-def test_extract_shouldExtractRightDatesIfValid(extractor: SpendingFilterExtractor, start_date_in: str, end_date_in: str, expected_start_date: date, expected_end_date: date) -> None:
+def test_extract_shouldExtractRightDates_IfValid(extractor: SpendingFilterExtractor, start_date_in: str, end_date_in: str, expected_start_date: date, expected_end_date: date) -> None:
     request_data = get_example_request_data(start_date=start_date_in, end_date=end_date_in)
     
     filter_data = extractor.extract_filter_data(request_data)
@@ -74,4 +75,77 @@ def test_extract_shouldExtractRightDatesIfValid(extractor: SpendingFilterExtract
     assert expected_start_date == actual_start
     assert expected_end_date == actual_end
 
+@pytest.mark.parametrize("category_ids, expected_ids", [
+    (["1", "2", "3", 4], [1, 2, 3, 4]),
+    ([10, 20], [10, 20]),
+    (["100"], [100])
+])
+def test_extract_shouldExtractRightCategoryIds_IfValid(extractor: SpendingFilterExtractor, category_ids: List[any], expected_ids: List[int]) -> None:
+    request_data = get_example_request_data(category_ids=category_ids)
+
+    filter_data = extractor.extract_filter_data(request_data)
+
+    actual_ids = filter_data.category_ids
+    assert expected_ids == actual_ids
+
+
+def test_extract_shouldReturnEmptyCategoryIds_IfNotAvailable(extractor: SpendingFilterExtractor) -> None:
+    request_data = get_example_request_data(category_ids=None)
+
+    filter_data = extractor.extract_filter_data(request_data)
+
+    actual_ids = filter_data.category_ids
+    assert [] == actual_ids
+
+@pytest.mark.parametrize("category_ids", [
+    ([1, 2, "abc"]),
+    (["x"]),
+    (["20.5", 12])
+])
+def test_extract_shouldRaiseException_IfCategoryIdNotParsable(extractor: SpendingFilterExtractor, category_ids: List[any]) -> None:
+    request_data = get_example_request_data(category_ids=category_ids)
+
+    with pytest.raises(ValueError):
+        extractor.extract_filter_data(request_data)
+
+
+@pytest.mark.parametrize("min_amount, max_amount, expected_range", [
+    (10, 100, AmountRange(min=10.0, max=100.0)),
+    (0, 55.5, AmountRange(min=0.0, max=55.5)),
+    (7.25, 7.3, AmountRange(min=7.25, max=7.3)),
+    (None, 33, AmountRange(min=0, max=33)),
+    (0.5, None, AmountRange(min=0.5, max=sys.float_info.max)),
+    (None, None, None)
+])
+def test_extract_shouldExtractRighAmountRange(
+        extractor: SpendingFilterExtractor, 
+        min_amount: float, 
+        max_amount: float,
+        expected_range: AmountRange) -> None:
+    request_data = get_example_request_data(min_amount=min_amount, max_amount=max_amount)
+
+    filter_data = extractor.extract_filter_data(request_data)
+
+    actual_range = filter_data.amount_range
+    assert expected_range == actual_range
+
+@pytest.mark.parametrize("min_amount, max_amount", [
+    ("abc", 100),
+    (12.5, "xyz"),
+    ("zero", "hundred"),
+])
+def test_extract_shouldRaiseException_IfAmountIsInvalid(
+        extractor: SpendingFilterExtractor, 
+        min_amount: float, 
+        max_amount: float) -> None:
+    request_data = get_example_request_data(min_amount=min_amount, max_amount=max_amount)
+
+    expected_message = "Could not convert..."
+
+    with pytest.raises(ValueError) as error:
+        extractor.extract_filter_data(request_data)
+
+    actual_message = str(error.value)
+    assert actual_message.startswith("Could not convert amount:")
+        
 

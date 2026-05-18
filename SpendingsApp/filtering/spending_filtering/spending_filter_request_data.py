@@ -8,4 +8,4 @@ class SpendingFilterRequestData:
     min_amount: Optional[str]
     max_amount: Optional[str]
     description: Optional[str]
-    category_ids: List[str]
+    category_ids: Optional[List[str]]
