@@ -4,7 +4,7 @@ from datetime import date
 import sys
 from typing import List
 
-from SpendingsApp.src.date_range import DateRange
+from SpendingsApp.utils.date_range import DateRange
 
 from .spending_filter_data import AmountRange, SpendingFilterData
 from .spending_filter_request_data import SpendingFilterRequestData

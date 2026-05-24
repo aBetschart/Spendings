@@ -2,7 +2,7 @@
 from datetime import date, timedelta
 
 from SpendingsApp.finance.category_data import CategoryData
-from SpendingsApp.src.date_range import DateRange
+from SpendingsApp.utils.date_range import DateRange
 from .monthly_average_data_gateway import MonthlyAverageDataGateway
 
 

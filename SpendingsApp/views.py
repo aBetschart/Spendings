@@ -1,22 +1,19 @@
 
-import sys
-from datetime import datetime, date
+from datetime import datetime
 from dataclasses import dataclass, asdict
 from http import HTTPStatus
 from typing import Dict, List
 
 from django.forms.models import model_to_dict
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse, QueryDict
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import render, redirect
 
 from SpendingsApp.database_gateways.filtering.spending_filter_database_gateway import SpendingFilterDatabaseGateway
-from SpendingsApp.filtering.spending_filtering.spending_filter_data import SpendingFilterData
-from SpendingsApp.filtering.spending_filtering.spending_filter_extractor import SpendingFilterExtractor
-from SpendingsApp.filtering.spending_filtering.spending_filter_request_data import SpendingFilterRequestData
+from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_extractor import SpendingFilterExtractor
+from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_request_data import SpendingFilterRequestData
 from .models import Category, Spending
 from .forms import SpendingFilterForm, SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
 
-from .src.date_range import DateRange
 from .database_gateways.category_converter import CategoryConverter
 from .database_gateways.finance.monthly_average.monthly_average_database_gateway import MonthlyAverageDatabaseGateway
 from .finance.category_data import CategoryData
@@ -57,7 +54,7 @@ def spending_get(request: HttpRequest) -> HttpResponse:
         description=request.GET.get('description', "")
     )
 
-    filter_extractor =SpendingFilterExtractor()
+    filter_extractor = SpendingFilterExtractor()
     try:
         filter_data = filter_extractor.extract_filter_data(request_data)
     except ValueError as e:

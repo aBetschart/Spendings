@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from SpendingsApp.src.date_range import DateRange
+from SpendingsApp.utils.date_range import DateRange
 
 @dataclass(frozen=True)
 class AmountRange:

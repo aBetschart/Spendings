@@ -1,9 +1,9 @@
 
 from typing import List
 
-from SpendingsApp.filtering.spending_filtering.spending_filter_data import SpendingFilterData
+from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_data import SpendingFilterData
 from SpendingsApp.models import Spending
-from SpendingsApp.src.date_range import DateRange
+from SpendingsApp.utils.date_range import DateRange
 
 
 class SpendingFilterDatabaseGateway:
