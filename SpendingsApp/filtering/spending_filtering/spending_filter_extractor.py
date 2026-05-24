@@ -12,10 +12,6 @@ from .spending_filter_request_data import SpendingFilterRequestData
 
 class SpendingFilterExtractor:
 
-    def __init__(self) -> None:
-
-        pass
-
     def extract_filter_data(self, request_data: SpendingFilterRequestData) -> SpendingFilterData: 
         if request_data.start_date is None:
             raise ValueError("Start date is required")
@@ -26,23 +22,22 @@ class SpendingFilterExtractor:
         date_range = self._extract_date_range(request_data)
         category_ids = self._extract_category_ids(request_data)
         amount_range = self._extract_amount_range(request_data)
-
+        description = self._extract_description(request_data)
         
-        description = "Test description"
-        filter_data = SpendingFilterData(
+        return SpendingFilterData(
             date_range=date_range,
             category_ids=category_ids,
             amount_range=amount_range,
             description=description
         )
-
-        return filter_data
+    
     
     def _extract_date_range(self, request_data: SpendingFilterRequestData) -> DateRange:
         start_date = date.fromisoformat(request_data.start_date)
         end_date = date.fromisoformat(request_data.end_date)
         return DateRange(start=start_date, end=end_date)
     
+
     def _extract_category_ids(self, request_data: SpendingFilterRequestData) -> List[int]:
         category_ids_input = request_data.category_ids
         if category_ids_input is None:
@@ -77,3 +72,7 @@ class SpendingFilterExtractor:
                 raise ValueError(f"Could not convert amount: {e}")
 
         return AmountRange(min=min_amount, max=max_amount)
+    
+
+    def _extract_description(self, request_data: SpendingFilterRequestData) -> str:
+        return request_data.description

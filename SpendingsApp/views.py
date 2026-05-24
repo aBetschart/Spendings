@@ -8,6 +8,10 @@ from typing import Dict, List
 from django.forms.models import model_to_dict
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse, QueryDict
 from django.shortcuts import render, redirect
+
+from SpendingsApp.filtering.spending_filtering.spending_filter_data import SpendingFilterData
+from SpendingsApp.filtering.spending_filtering.spending_filter_extractor import SpendingFilterExtractor
+from SpendingsApp.filtering.spending_filtering.spending_filter_request_data import SpendingFilterRequestData
 from .models import Category, Spending
 from .forms import SpendingFilterForm, SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
 
@@ -38,122 +42,58 @@ def filter(request: HttpRequest) -> HttpResponse:
 # ------------------------- SPENDING  ------------------
 # ------------------------------------------------------
 
-@dataclass(frozen=True)
-class AmountRange:
-    min: float
-    max: float
-
-    def __post_init__(self) -> None:
-        if self.min < 0 or self.max < 0:
-            raise ValueError("Amount cannot be negative")
-        if self.min > self.max:
-            raise ValueError("min amount cannot be greater than max amount")
-
-@dataclass(frozen=True)
-class SpendingFilterParams():
-    date_range: DateRange
-    categories: List[int]
-    amount_range: AmountRange
-    description: str
-
 
 def spending_get(request: HttpRequest) -> HttpResponse:
     if not request.method == 'GET':
         return HttpResponseNotAllowed(permitted_methods=['GET'])
 
+    request_data = SpendingFilterRequestData(
+        start_date=request.GET.get('start_date'),
+        end_date=request.GET.get('end_date'),
+        category_ids=request.GET.getlist('categories'),
+        min_amount=request.GET.get('min_amount'),
+        max_amount=request.GET.get('max_amount'),
+        description=request.GET.get('description', "")
+    )
+
+    filter_extractor =SpendingFilterExtractor()
     try:
-        filter_params = extract_filter_params(request.GET)
+        filter_data = filter_extractor.extract_filter_data(request_data)
     except ValueError as e:
         return JsonResponse({"errors": str(e)}, status=HTTPStatus.BAD_REQUEST)
 
-    spendings = get_filtered_spendings(filter_params)
+    spendings = get_filtered_spendings(filter_data)
 
     total = calculate_total(spendings)
     spendings_response = form_spendings_response(spendings)
     data = { 'spendings': spendings_response, 'total': total }
     return JsonResponse(data, status=HTTPStatus.OK)
 
-def get_filtered_spendings(filter_params: SpendingFilterParams) -> List[Spending]:
-    date_range = filter_params.date_range
+def get_filtered_spendings(filter_data: SpendingFilterData) -> List[Spending]:
+    date_range = filter_data.date_range
     start_date = date_range.start
     end_date = date_range.end
     spendings = Spending.objects.filter(spendingDate__gte=start_date, spendingDate__lte=end_date)
 
-    if filter_params.categories != []:
-        spendings = spendings.filter(category__in=filter_params.categories)
+    if filter_data.category_ids != []:
+        spendings = spendings.filter(category__in=filter_data.category_ids)
 
-    amount_range = filter_params.amount_range
-    spendings = spendings.filter(amount__gte=amount_range.min, amount__lte=amount_range.max)
+    amount_range = filter_data.amount_range
+    if amount_range is not None:
+        spendings = spendings.filter(amount__gte=amount_range.min, amount__lte=amount_range.max)
     
-    if filter_params.description != "":
-        spendings = spendings.filter(description__icontains=filter_params.description)
+    if filter_data.description != "":
+        spendings = spendings.filter(description__icontains=filter_data.description)
 
     return spendings.order_by('-spendingDate')
 
-def extract_filter_params(request_data: QueryDict) -> SpendingFilterParams:    
-    date_range = extract_date_range(request_data.dict())
-    categories = extract_categories(request_data)
-    amount_range = extract_amount_range(request_data.dict())
-    description = extract_description(request_data.dict())
-    
-    return SpendingFilterParams(date_range=date_range, categories=categories, amount_range=amount_range, description=description)
-
-def extract_date_range(request_data: Dict[str, any]) -> DateRange:
-    try:
-        start_date_param = request_data['start_date']
-        end_date_param = request_data['end_date']
-    except KeyError:
-        raise ValueError("Missing required parameters: start_date or/and end_date")
-
-    try:
-        start_date = date.fromisoformat(start_date_param)
-        end_date = date.fromisoformat(end_date_param)
-    except ValueError:
-        raise ValueError("Invalid date format. Expected ISO format: YYYY-MM-DD")
-
-    return DateRange(start=start_date, end=end_date)
-
-def extract_categories(request_data: QueryDict) -> List[int]:
-    if 'categories' not in request_data:
-        return []
-    
-    categories = request_data.getlist('categories')
-    try:
-        category_ids = [convert_to_category_id(c) for c in categories]
-    except Exception:
-        raise ValueError("Category ID not found")
-    
-    return category_ids
-
-def extract_amount_range(request_data: Dict[str, any]) -> AmountRange:
-    min_amount = 0
-    max_amount = sys.float_info.max
-
-    if 'min_amount' in request_data:
-        min_amount = parse_amount(request_data['min_amount'])
-        
-    if 'max_amount' in request_data:
-        max_amount = parse_amount(request_data['max_amount'])
-
-    return AmountRange(min=min_amount, max=max_amount)
-
-def parse_amount(amount_str: str) -> float:
-    try:
-        return float(amount_str)
-    except ValueError:
-        raise ValueError("Invalid amount format. Expected a number")
-
-def extract_description(request_data: Dict[str, any]) -> str:
-    if 'description' not in request_data:
-        return ""
-    
-    return request_data['description']
 
 def calculate_total(spendings: List[Spending]) -> float:
     sum = 0
     for spending in spendings:
         sum += spending.amount
     return sum
+
 
 def form_spendings_response(spendings: List[Spending]) -> List[Dict[str, any]]:
     response_spendings: List[Dict[str, any]] = []

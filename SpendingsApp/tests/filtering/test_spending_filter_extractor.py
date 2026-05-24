@@ -117,7 +117,7 @@ def test_extract_shouldRaiseException_IfCategoryIdNotParsable(extractor: Spendin
     (0.5, None, AmountRange(min=0.5, max=sys.float_info.max)),
     (None, None, None)
 ])
-def test_extract_shouldExtractRighAmountRange(
+def test_extract_shouldExtractRightAmountRangeIfAvailable(
         extractor: SpendingFilterExtractor, 
         min_amount: float, 
         max_amount: float,
@@ -140,12 +140,32 @@ def test_extract_shouldRaiseException_IfAmountIsInvalid(
         max_amount: float) -> None:
     request_data = get_example_request_data(min_amount=min_amount, max_amount=max_amount)
 
-    expected_message = "Could not convert..."
-
     with pytest.raises(ValueError) as error:
         extractor.extract_filter_data(request_data)
 
     actual_message = str(error.value)
     assert actual_message.startswith("Could not convert amount:")
+
+def test_extract_shouldNotSetAmountsIfNotAvailable(extractor: SpendingFilterExtractor) -> None:
+    request_data = get_example_request_data(min_amount=None, max_amount=None)
+
+    filter_data = extractor.extract_filter_data(request_data)
+
+    actual_range = filter_data.amount_range
+    assert actual_range is None
         
+@pytest.mark.parametrize("description", [
+    "Test description",
+    "Another description",
+    "",
+    None
+])
+def test_extract_shouldSetDescription(extractor: SpendingFilterExtractor, description: str) -> None:
+    request_data = get_example_request_data(description=description)
+
+    filter_data = extractor.extract_filter_data(request_data)
+
+    expected = description
+    actual = filter_data.description
+    assert expected == actual
 
