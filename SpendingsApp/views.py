@@ -9,6 +9,7 @@ from django.forms.models import model_to_dict
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse, QueryDict
 from django.shortcuts import render, redirect
 
+from SpendingsApp.database_gateways.filtering.spending_filter_database_gateway import SpendingFilterDatabaseGateway
 from SpendingsApp.filtering.spending_filtering.spending_filter_data import SpendingFilterData
 from SpendingsApp.filtering.spending_filtering.spending_filter_extractor import SpendingFilterExtractor
 from SpendingsApp.filtering.spending_filtering.spending_filter_request_data import SpendingFilterRequestData
@@ -61,31 +62,14 @@ def spending_get(request: HttpRequest) -> HttpResponse:
         filter_data = filter_extractor.extract_filter_data(request_data)
     except ValueError as e:
         return JsonResponse({"errors": str(e)}, status=HTTPStatus.BAD_REQUEST)
-
-    spendings = get_filtered_spendings(filter_data)
+    
+    spending_filter_gateway = SpendingFilterDatabaseGateway()
+    spendings = spending_filter_gateway.get_filtered_spendings(filter_data)
 
     total = calculate_total(spendings)
     spendings_response = form_spendings_response(spendings)
     data = { 'spendings': spendings_response, 'total': total }
     return JsonResponse(data, status=HTTPStatus.OK)
-
-def get_filtered_spendings(filter_data: SpendingFilterData) -> List[Spending]:
-    date_range = filter_data.date_range
-    start_date = date_range.start
-    end_date = date_range.end
-    spendings = Spending.objects.filter(spendingDate__gte=start_date, spendingDate__lte=end_date)
-
-    if filter_data.category_ids != []:
-        spendings = spendings.filter(category__in=filter_data.category_ids)
-
-    amount_range = filter_data.amount_range
-    if amount_range is not None:
-        spendings = spendings.filter(amount__gte=amount_range.min, amount__lte=amount_range.max)
-    
-    if filter_data.description != "":
-        spendings = spendings.filter(description__icontains=filter_data.description)
-
-    return spendings.order_by('-spendingDate')
 
 
 def calculate_total(spendings: List[Spending]) -> float:
