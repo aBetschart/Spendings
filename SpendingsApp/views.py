@@ -220,12 +220,13 @@ def category_post(request: HttpRequest) -> HttpResponse:
     if request.method != 'POST':
         return HttpResponseNotAllowed(permitted_methods=['POST'])
     
-    filter_form = CategoryForm(data=request.POST)
-    if not filter_form.is_valid():
-        return JsonResponse({"errors": filter_form.errors}, status=HTTPStatus.BAD_REQUEST)
+    form = CategoryForm(data=request.POST)
+    if not form.is_valid():
+        message = "Invalid category form: " + str(form.errors)
+        return HttpResponseBadRequest(message)
 
-    newCategory = filter_form.save()
-    category_dict = model_to_dict(newCategory)
+    new_category = form.save()
+    category_dict = model_to_dict(new_category)
     return JsonResponse({"message": "Category created", "category": category_dict}, status=HTTPStatus.OK)
 
 
@@ -243,9 +244,9 @@ def category_edit(request: HttpRequest, id: int) -> HttpResponse:
         return HttpResponseNotAllowed(permitted_methods=['POST'])
     
     try:
-        category = Category.objects.get(pk=id)
-    except Category.DoesNotExist:
-        return JsonResponse({"errors": "Category not found"}, status=HTTPStatus.NOT_FOUND)
+        category = _get_category_from_id(id)
+    except ValueError as e:
+        return HttpResponseBadRequest(str(e))
 
     edited_form = CategoryForm(data=request.POST, instance=category)
     if not edited_form.is_valid():
@@ -256,18 +257,25 @@ def category_edit(request: HttpRequest, id: int) -> HttpResponse:
     return JsonResponse({"message": "Category edited", "category": category_dict}, status=HTTPStatus.OK)
 
 
+def _get_category_from_id(id: int) -> Category:
+    try:
+        return Category.objects.get(pk=id)
+    except Category.DoesNotExist:
+        raise ValueError(f"Category with ID {id} does not exist.")
+    
+
 def category_delete(request: HttpRequest, id: int) -> HttpResponse:
     if request.method != 'POST':
         return HttpResponseNotAllowed(permitted_methods=['POST'])
     
     try:
-        category = Category.objects.get(pk=id)
-    except Category.DoesNotExist:
-        return JsonResponse({"errors": "Category not found"}, status=HTTPStatus.NOT_FOUND)
+        category = _get_category_from_id(id)
+    except ValueError as e:
+        return HttpResponseBadRequest(str(e))
 
     if is_category_used(category):
         message = "Category is used by existing spendings and cannot be deleted"
-        return JsonResponse({"errors": message}, status=HTTPStatus.BAD_REQUEST)
+        return HttpResponseBadRequest(message)
 
     category.delete()
     return JsonResponse({"message": "Category deleted"}, status=HTTPStatus.OK)
@@ -278,12 +286,9 @@ def is_category_used(category: Category) -> bool:
     return spendings.exists()
 
 
-def categories(request: HttpRequest):
-    if request.method == 'POST':
-        filledForm = CategoryForm(data=request.POST)
-        if filledForm.is_valid():
-            newCategory = filledForm
-            newCategory.save()
+def categories(request: HttpRequest) -> HttpResponse:
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(permitted_methods=['GET'])
 
     categoryForm = CategoryForm()
     categories = Category.objects.order_by('name')
