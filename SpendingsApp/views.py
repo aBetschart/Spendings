@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from dataclasses import dataclass, asdict
+from dataclasses import asdict
 from http import HTTPStatus
 from typing import Dict, List
 
@@ -10,6 +10,7 @@ from django.shortcuts import render, redirect
 
 from SpendingsApp.database_gateways.database_category_converter import DatabaseCategoryConverter
 from SpendingsApp.database_gateways.filtering.spending_filter_database_gateway import SpendingFilterDatabaseGateway
+from SpendingsApp.request_data_preparation.get_recent_spending.spendings_count_preparer import SpendingsCountPreparer
 from SpendingsApp.request_data_preparation.monthly_average.monthly_average_data_preparer import MonthlyAverageDataPreparer
 from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_extractor import SpendingFilterExtractor
 from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_request_data import SpendingFilterRequestData
@@ -17,11 +18,8 @@ from .models import Category, Spending
 from .forms import SpendingFilterForm, SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
 
 from .database_gateways.finance.monthly_average.monthly_average_database_gateway import MonthlyAverageDatabaseGateway
-from .finance.category_data import CategoryData
 from .finance.monthly_average.monthly_average_calculator import MonthlyAverageCalculator
 
-DEFAULT_RECENT_SPENDINGS_COUNT = 10
-RECENT_SPENDINGS_MAX_COUNT = 100
 
 def home(request: HttpRequest) -> HttpResponse:
     if request.method != 'GET':
@@ -88,24 +86,12 @@ def form_spendings_response(spendings: List[Spending]) -> List[Dict[str, any]]:
 
 
 def spending_get_recent(request: HttpRequest):
-    spendings_count = extract_spendings_count(request.POST)
+    preparer = SpendingsCountPreparer()
+    spendings_count = preparer.extract_spendings_count(request.POST)
     spendings = get_recent_spendings(spendings_count)
     data = { 'spendings': form_spendings_response(spendings) }
     return JsonResponse(data, status=HTTPStatus.OK)
 
-def extract_spendings_count(query_data):
-    try:
-        spendings_count = int(query_data['spendings_count'])
-    except:
-        spendings_count = DEFAULT_RECENT_SPENDINGS_COUNT
-
-    if spendings_count < 1:
-        return 1
-
-    if spendings_count > RECENT_SPENDINGS_MAX_COUNT:
-        return RECENT_SPENDINGS_MAX_COUNT
-
-    return spendings_count
 
 def get_recent_spendings(numberOfSpendings: int) -> List[Spending]:
     order = '-entryDate'
@@ -167,7 +153,7 @@ def spending_delete(request: HttpRequest, id: int) -> HttpResponse:
     return JsonResponse({"message": "Spending deleted"}, status=HTTPStatus.OK)
 
 
-def spending_view(request: HttpRequest, id: int):
+def spending_view(request: HttpRequest, id: int) -> HttpResponse:
     spending = Spending.objects.get(id=id)
     if request.method == 'POST':
         editedSpending = SpendingForm(data=request.POST, instance=spending)
@@ -178,11 +164,9 @@ def spending_view(request: HttpRequest, id: int):
                 spending.delete()
                 return redirect('home')
 
-    spendingForm = SpendingForm(instance=spending)
+    spending_form = SpendingForm(instance=spending)
 
-    args = {
-        'spendingForm': spendingForm
-    }
+    args = { 'spendingForm': spending_form }
     return render(request, 'spending.html', args)
 
 
