@@ -158,11 +158,11 @@ def spending_view(request: HttpRequest, id: int) -> HttpResponse:
     if request.method == 'POST':
         editedSpending = SpendingForm(data=request.POST, instance=spending)
         if editedSpending.is_valid():
-            if 'edit-spending' in request.POST:
-                editedSpending.save()
-            elif 'delete-spending' in request.POST:
+            if 'delete_spending' in request.POST:
                 spending.delete()
                 return redirect('home')
+            else:
+                return HttpResponseNotAllowed(permitted_methods=['POST with delete_spending field'])
 
     spending_form = SpendingForm(instance=spending)
 
