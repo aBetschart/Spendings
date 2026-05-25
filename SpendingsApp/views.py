@@ -8,13 +8,14 @@ from django.forms.models import model_to_dict
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import render, redirect
 
+from SpendingsApp.database_gateways.database_category_converter import DatabaseCategoryConverter
 from SpendingsApp.database_gateways.filtering.spending_filter_database_gateway import SpendingFilterDatabaseGateway
+from SpendingsApp.request_data_preparation.monthly_average.monthly_average_data_preparer import MonthlyAverageDataPreparer
 from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_extractor import SpendingFilterExtractor
 from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_request_data import SpendingFilterRequestData
 from .models import Category, Spending
 from .forms import SpendingFilterForm, SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
 
-from .database_gateways.category_converter import CategoryConverter
 from .database_gateways.finance.monthly_average.monthly_average_database_gateway import MonthlyAverageDatabaseGateway
 from .finance.category_data import CategoryData
 from .finance.monthly_average.monthly_average_calculator import MonthlyAverageCalculator
@@ -370,53 +371,34 @@ def yearly_overview(request: HttpRequest):
 # ------------------------- OTHER  ---------------------
 # ------------------------------------------------------
 
-@dataclass(frozen=True)
-class MonthlyAverageRequestData:
-    year: int
-    category: CategoryData
-
 def monthly_average(request: HttpRequest):
     if request.method != 'GET':
         return HttpResponseNotAllowed(permitted_methods=['GET'])
 
-    query_data = request.GET.dict()
+    database_category_converter = DatabaseCategoryConverter()
+    request_data_preparer = MonthlyAverageDataPreparer(database_category_converter)
+
+    request_data = {
+        'year': request.GET.get('year'),
+        'category': request.GET.get('category')
+    }
     try:
-        request_data = extract_monthly_average_request_data(query_data)
+        average_request_data = request_data_preparer.extract_average_data(request_data)
     except ValueError as e:
         return HttpResponseBadRequest(str(e))
+
 
     database_gateway = MonthlyAverageDatabaseGateway()
     average_calculator = MonthlyAverageCalculator(database_gateway)
 
-    category = request_data.category
-    category_data = CategoryData(id=category.id, name=category.name)
-    average = average_calculator.calculate_monthly_average(request_data.year, category_data)
+    year = average_request_data.year
+    category = average_request_data.category
+    average = average_calculator.calculate_monthly_average(year, category)
     
     data = {
         'average': average,
-        'category': asdict(category_data),
-        'year': request_data.year,
+        'year': year,
+        'category': asdict(category),
     }
     return JsonResponse(data, status=HTTPStatus.OK)
     
-def extract_monthly_average_request_data(query_data: Dict[str, any]) -> MonthlyAverageRequestData:
-    if not 'year' in query_data:
-        raise ValueError("Missing required parameter: year")
-    
-    try:
-        year = int(query_data['year'])
-    except ValueError:
-        raise ValueError("Invalid year format. Expected a number")
-    
-    if not 'category' in query_data:
-        raise ValueError("Missing required parameter: category")
-    
-    category_converter = CategoryConverter()
-    queried_category = query_data['category']
-    try:
-        category = category_converter.convert_to_category(queried_category)
-    except ValueError as e:
-        raise ValueError(str(e))
-
-    category_data = CategoryData(id=category.id, name=category.name)
-    return MonthlyAverageRequestData(year=year, category=category_data)

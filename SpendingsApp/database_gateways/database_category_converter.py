@@ -1,10 +1,17 @@
 
 
+from SpendingsApp.finance.category_data import CategoryData
 from SpendingsApp.models import Category
+from SpendingsApp.request_data_preparation.category_converter import CategoryConverter
 
 
-class CategoryConverter:
-    def convert_to_category(self, input) -> Category:
+class DatabaseCategoryConverter(CategoryConverter):
+    def convert_to_category(self, input: any) -> CategoryData:
+        category = self._read_from_database(input)
+        return CategoryData(id=category.id, name=category.name)
+    
+
+    def _read_from_database(self, input: any) -> Category:
         try:
             category = self._try_convert_options(input)
         except:

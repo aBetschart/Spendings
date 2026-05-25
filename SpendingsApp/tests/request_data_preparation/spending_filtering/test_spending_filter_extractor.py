@@ -4,9 +4,9 @@ import pytest
 from typing import List
 from datetime import date
 
-from SpendingsApp.filtering.spending_filtering.spending_filter_data import AmountRange
-from SpendingsApp.filtering.spending_filtering.spending_filter_extractor import SpendingFilterExtractor
-from SpendingsApp.filtering.spending_filtering.spending_filter_request_data import SpendingFilterRequestData
+from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_data import AmountRange
+from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_extractor import SpendingFilterExtractor
+from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_request_data import SpendingFilterRequestData
 
 
 
