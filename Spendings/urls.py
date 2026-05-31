@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 
 from SpendingsApp import views_file
-from SpendingsApp.views import pages
+from SpendingsApp.views import pages, category
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -35,14 +35,13 @@ urlpatterns = [
     path('spending/edit/<int:id>', views_file.spending_view, name='spending_edit'),
     path('spending/edit/api/<int:id>', views_file.spending_edit, name='spending_edit_api'),
 
-    path('categories', views_file.categories, name='categories'),
-    path('categories/edit/<int:id>', views_file.category_view, name='category_edit'),
+    path('categories', category.CategoryOverview.as_view(), name='categories'),
+    path('categories/edit/<int:id>', category.CategoryEditView.as_view(), name='category_edit'),
 
-    path('category/post', views_file.category_post, name='category_post'),
-    path('category/get', views_file.category_get, name='category_get'),
-    path('categories/delete/<int:id>', views_file.category_delete, name='category_delete'),
-    path('category/edit/<int:id>', views_file.category_edit, name='category_edit_api'),
-    path('category/delete/<int:id>', views_file.category_delete, name='category_delete_api'),
+    path('category/post', category.CategoryPostApi.as_view(), name='category_post'),
+    path('category/get', category.CategoryGetApi.as_view(), name='category_get'),
+    path('category/edit/<int:id>', category.CategoryEditApi.as_view(), name='category_edit_api'),
+    path('category/delete/<int:id>', category.CategoryDeleteApi.as_view(), name='category_delete'),
 
     path('average/monthly', views_file.monthly_average, name='monthly_average'),
 ]
