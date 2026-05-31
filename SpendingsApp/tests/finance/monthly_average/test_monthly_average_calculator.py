@@ -3,7 +3,7 @@ from unittest.mock import Mock
 from unittest.mock import patch
 from datetime import date
 
-from SpendingsApp.src.date_range import DateRange
+from SpendingsApp.utils.date_range import DateRange
 from SpendingsApp.finance.category_data import CategoryData
 
 from SpendingsApp.finance.monthly_average.monthly_average_calculator import MonthlyAverageCalculator

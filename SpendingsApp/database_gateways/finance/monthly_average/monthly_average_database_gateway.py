@@ -2,7 +2,7 @@
 from SpendingsApp.finance.category_data import CategoryData
 from SpendingsApp.finance.monthly_average.monthly_average_data_gateway import MonthlyAverageDataGateway
 from SpendingsApp.models import Spending
-from SpendingsApp.src.date_range import DateRange
+from SpendingsApp.utils.date_range import DateRange
 
 
 class MonthlyAverageDatabaseGateway(MonthlyAverageDataGateway):

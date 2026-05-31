@@ -5,17 +5,23 @@ $(document).ready(function() {
 
     validateCategoryForm("#category-form");
 
-    $("#category-submit-btn").mouseup(function(e) {
+    $("#category-submit-btn").on('click', function(e) {
+        validateCategoryForm("#category-form");
+
         e.preventDefault();
         if (!$("#category-form").valid())
             return;
 
-        const formElement = document.getElementById('category-post-form');
+        const formElement = document.getElementById('category-form');
+        if (!formElement) {
+            console.error("category-post: form element with id 'category-form' not found");
+            return;
+        }
         const formData = new FormData(formElement);
 
         $.ajax({
             type: "POST",
-            url: "category/post/",
+            url: DJANGO_URLS.category_post,
             data: formData,
             processData: false,
             contentType: false,

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 from SpendingsApp.finance.category_data import CategoryData
-from SpendingsApp.src.date_range import DateRange
+from SpendingsApp.utils.date_range import DateRange
 
 
 class MonthlyAverageDataGateway(ABC):

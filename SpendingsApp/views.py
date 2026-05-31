@@ -1,24 +1,25 @@
 
-import sys
-from datetime import datetime, date
-from dataclasses import dataclass, asdict
+from datetime import datetime
+from dataclasses import asdict
 from http import HTTPStatus
 from typing import Dict, List
 
 from django.forms.models import model_to_dict
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse, QueryDict
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import render, redirect
+
+from SpendingsApp.database_gateways.database_category_converter import DatabaseCategoryConverter
+from SpendingsApp.database_gateways.filtering.spending_filter_database_gateway import SpendingFilterDatabaseGateway
+from SpendingsApp.request_data_preparation.get_recent_spending.spendings_count_preparer import SpendingsCountPreparer
+from SpendingsApp.request_data_preparation.monthly_average.monthly_average_data_preparer import MonthlyAverageDataPreparer
+from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_extractor import SpendingFilterExtractor
+from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_request_data import SpendingFilterRequestData
 from .models import Category, Spending
 from .forms import SpendingFilterForm, SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
 
-from .src.date_range import DateRange
-from .database_gateways.category_converter import CategoryConverter
 from .database_gateways.finance.monthly_average.monthly_average_database_gateway import MonthlyAverageDatabaseGateway
-from .finance.category_data import CategoryData
 from .finance.monthly_average.monthly_average_calculator import MonthlyAverageCalculator
 
-DEFAULT_RECENT_SPENDINGS_COUNT = 10
-RECENT_SPENDINGS_MAX_COUNT = 100
 
 def home(request: HttpRequest) -> HttpResponse:
     if request.method != 'GET':
@@ -38,122 +39,41 @@ def filter(request: HttpRequest) -> HttpResponse:
 # ------------------------- SPENDING  ------------------
 # ------------------------------------------------------
 
-@dataclass(frozen=True)
-class AmountRange:
-    min: float
-    max: float
-
-    def __post_init__(self) -> None:
-        if self.min < 0 or self.max < 0:
-            raise ValueError("Amount cannot be negative")
-        if self.min > self.max:
-            raise ValueError("min amount cannot be greater than max amount")
-
-@dataclass(frozen=True)
-class SpendingFilterParams():
-    date_range: DateRange
-    categories: List[int]
-    amount_range: AmountRange
-    description: str
-
 
 def spending_get(request: HttpRequest) -> HttpResponse:
     if not request.method == 'GET':
         return HttpResponseNotAllowed(permitted_methods=['GET'])
 
+    request_data = SpendingFilterRequestData(
+        start_date=request.GET.get('start_date'),
+        end_date=request.GET.get('end_date'),
+        category_ids=request.GET.getlist('categories'),
+        min_amount=request.GET.get('min_amount'),
+        max_amount=request.GET.get('max_amount'),
+        description=request.GET.get('description', "")
+    )
+
+    filter_extractor = SpendingFilterExtractor()
     try:
-        filter_params = extract_filter_params(request.GET)
+        filter_data = filter_extractor.extract_filter_data(request_data)
     except ValueError as e:
         return JsonResponse({"errors": str(e)}, status=HTTPStatus.BAD_REQUEST)
-
-    spendings = get_filtered_spendings(filter_params)
+    
+    spending_filter_gateway = SpendingFilterDatabaseGateway()
+    spendings = spending_filter_gateway.get_filtered_spendings(filter_data)
 
     total = calculate_total(spendings)
     spendings_response = form_spendings_response(spendings)
     data = { 'spendings': spendings_response, 'total': total }
     return JsonResponse(data, status=HTTPStatus.OK)
 
-def get_filtered_spendings(filter_params: SpendingFilterParams) -> List[Spending]:
-    date_range = filter_params.date_range
-    start_date = date_range.start
-    end_date = date_range.end
-    spendings = Spending.objects.filter(spendingDate__gte=start_date, spendingDate__lte=end_date)
-
-    if filter_params.categories != []:
-        spendings = spendings.filter(category__in=filter_params.categories)
-
-    amount_range = filter_params.amount_range
-    spendings = spendings.filter(amount__gte=amount_range.min, amount__lte=amount_range.max)
-    
-    if filter_params.description != "":
-        spendings = spendings.filter(description__icontains=filter_params.description)
-
-    return spendings.order_by('-spendingDate')
-
-def extract_filter_params(request_data: QueryDict) -> SpendingFilterParams:    
-    date_range = extract_date_range(request_data.dict())
-    categories = extract_categories(request_data)
-    amount_range = extract_amount_range(request_data.dict())
-    description = extract_description(request_data.dict())
-    
-    return SpendingFilterParams(date_range=date_range, categories=categories, amount_range=amount_range, description=description)
-
-def extract_date_range(request_data: Dict[str, any]) -> DateRange:
-    try:
-        start_date_param = request_data['start_date']
-        end_date_param = request_data['end_date']
-    except KeyError:
-        raise ValueError("Missing required parameters: start_date or/and end_date")
-
-    try:
-        start_date = date.fromisoformat(start_date_param)
-        end_date = date.fromisoformat(end_date_param)
-    except ValueError:
-        raise ValueError("Invalid date format. Expected ISO format: YYYY-MM-DD")
-
-    return DateRange(start=start_date, end=end_date)
-
-def extract_categories(request_data: QueryDict) -> List[int]:
-    if 'categories' not in request_data:
-        return []
-    
-    categories = request_data.getlist('categories')
-    try:
-        category_ids = [convert_to_category_id(c) for c in categories]
-    except Exception:
-        raise ValueError("Category ID not found")
-    
-    return category_ids
-
-def extract_amount_range(request_data: Dict[str, any]) -> AmountRange:
-    min_amount = 0
-    max_amount = sys.float_info.max
-
-    if 'min_amount' in request_data:
-        min_amount = parse_amount(request_data['min_amount'])
-        
-    if 'max_amount' in request_data:
-        max_amount = parse_amount(request_data['max_amount'])
-
-    return AmountRange(min=min_amount, max=max_amount)
-
-def parse_amount(amount_str: str) -> float:
-    try:
-        return float(amount_str)
-    except ValueError:
-        raise ValueError("Invalid amount format. Expected a number")
-
-def extract_description(request_data: Dict[str, any]) -> str:
-    if 'description' not in request_data:
-        return ""
-    
-    return request_data['description']
 
 def calculate_total(spendings: List[Spending]) -> float:
     sum = 0
     for spending in spendings:
         sum += spending.amount
     return sum
+
 
 def form_spendings_response(spendings: List[Spending]) -> List[Dict[str, any]]:
     response_spendings: List[Dict[str, any]] = []
@@ -166,24 +86,12 @@ def form_spendings_response(spendings: List[Spending]) -> List[Dict[str, any]]:
 
 
 def spending_get_recent(request: HttpRequest):
-    spendings_count = extract_spendings_count(request.POST)
+    preparer = SpendingsCountPreparer()
+    spendings_count = preparer.extract_spendings_count(request.POST)
     spendings = get_recent_spendings(spendings_count)
     data = { 'spendings': form_spendings_response(spendings) }
     return JsonResponse(data, status=HTTPStatus.OK)
 
-def extract_spendings_count(query_data):
-    try:
-        spendings_count = int(query_data['spendings_count'])
-    except:
-        spendings_count = DEFAULT_RECENT_SPENDINGS_COUNT
-
-    if spendings_count < 1:
-        return 1
-
-    if spendings_count > RECENT_SPENDINGS_MAX_COUNT:
-        return RECENT_SPENDINGS_MAX_COUNT
-
-    return spendings_count
 
 def get_recent_spendings(numberOfSpendings: int) -> List[Spending]:
     order = '-entryDate'
@@ -245,22 +153,20 @@ def spending_delete(request: HttpRequest, id: int) -> HttpResponse:
     return JsonResponse({"message": "Spending deleted"}, status=HTTPStatus.OK)
 
 
-def spending_view(request: HttpRequest, id: int):
+def spending_view(request: HttpRequest, id: int) -> HttpResponse:
     spending = Spending.objects.get(id=id)
     if request.method == 'POST':
         editedSpending = SpendingForm(data=request.POST, instance=spending)
         if editedSpending.is_valid():
-            if 'edit-spending' in request.POST:
-                editedSpending.save()
-            elif 'delete-spending' in request.POST:
+            if 'delete_spending' in request.POST:
                 spending.delete()
                 return redirect('home')
+            else:
+                return HttpResponseNotAllowed(permitted_methods=['POST with delete_spending field'])
 
-    spendingForm = SpendingForm(instance=spending)
+    spending_form = SpendingForm(instance=spending)
 
-    args = {
-        'spendingForm': spendingForm
-    }
+    args = { 'spendingForm': spending_form }
     return render(request, 'spending.html', args)
 
 
@@ -298,12 +204,13 @@ def category_post(request: HttpRequest) -> HttpResponse:
     if request.method != 'POST':
         return HttpResponseNotAllowed(permitted_methods=['POST'])
     
-    filledForm = CategoryForm(data=request.POST)
-    if not filledForm.is_valid():
-        return JsonResponse({"errors": filledForm.errors}, status=HTTPStatus.BAD_REQUEST)
+    form = CategoryForm(data=request.POST)
+    if not form.is_valid():
+        message = "Invalid category form: " + str(form.errors)
+        return HttpResponseBadRequest(message)
 
-    newCategory = filledForm.save()
-    category_dict = model_to_dict(newCategory)
+    new_category = form.save()
+    category_dict = model_to_dict(new_category)
     return JsonResponse({"message": "Category created", "category": category_dict}, status=HTTPStatus.OK)
 
 
@@ -321,9 +228,9 @@ def category_edit(request: HttpRequest, id: int) -> HttpResponse:
         return HttpResponseNotAllowed(permitted_methods=['POST'])
     
     try:
-        category = Category.objects.get(pk=id)
-    except Category.DoesNotExist:
-        return JsonResponse({"errors": "Category not found"}, status=HTTPStatus.NOT_FOUND)
+        category = _get_category_from_id(id)
+    except ValueError as e:
+        return HttpResponseBadRequest(str(e))
 
     edited_form = CategoryForm(data=request.POST, instance=category)
     if not edited_form.is_valid():
@@ -334,18 +241,25 @@ def category_edit(request: HttpRequest, id: int) -> HttpResponse:
     return JsonResponse({"message": "Category edited", "category": category_dict}, status=HTTPStatus.OK)
 
 
+def _get_category_from_id(id: int) -> Category:
+    try:
+        return Category.objects.get(pk=id)
+    except Category.DoesNotExist:
+        raise ValueError(f"Category with ID {id} does not exist.")
+    
+
 def category_delete(request: HttpRequest, id: int) -> HttpResponse:
     if request.method != 'POST':
         return HttpResponseNotAllowed(permitted_methods=['POST'])
     
     try:
-        category = Category.objects.get(pk=id)
-    except Category.DoesNotExist:
-        return JsonResponse({"errors": "Category not found"}, status=HTTPStatus.NOT_FOUND)
+        category = _get_category_from_id(id)
+    except ValueError as e:
+        return HttpResponseBadRequest(str(e))
 
     if is_category_used(category):
         message = "Category is used by existing spendings and cannot be deleted"
-        return JsonResponse({"errors": message}, status=HTTPStatus.BAD_REQUEST)
+        return HttpResponseBadRequest(message)
 
     category.delete()
     return JsonResponse({"message": "Category deleted"}, status=HTTPStatus.OK)
@@ -356,12 +270,9 @@ def is_category_used(category: Category) -> bool:
     return spendings.exists()
 
 
-def categories(request: HttpRequest):
-    if request.method == 'POST':
-        filledForm = CategoryForm(data=request.POST)
-        if filledForm.is_valid():
-            newCategory = filledForm
-            newCategory.save()
+def categories(request: HttpRequest) -> HttpResponse:
+    if request.method != 'GET':
+        return HttpResponseNotAllowed(permitted_methods=['GET'])
 
     categoryForm = CategoryForm()
     categories = Category.objects.order_by('name')
@@ -449,53 +360,34 @@ def yearly_overview(request: HttpRequest):
 # ------------------------- OTHER  ---------------------
 # ------------------------------------------------------
 
-@dataclass(frozen=True)
-class MonthlyAverageRequestData:
-    year: int
-    category: CategoryData
-
 def monthly_average(request: HttpRequest):
     if request.method != 'GET':
         return HttpResponseNotAllowed(permitted_methods=['GET'])
 
-    query_data = request.GET.dict()
+    database_category_converter = DatabaseCategoryConverter()
+    request_data_preparer = MonthlyAverageDataPreparer(database_category_converter)
+
+    request_data = {
+        'year': request.GET.get('year'),
+        'category': request.GET.get('category')
+    }
     try:
-        request_data = extract_monthly_average_request_data(query_data)
+        average_request_data = request_data_preparer.extract_average_data(request_data)
     except ValueError as e:
         return HttpResponseBadRequest(str(e))
+
 
     database_gateway = MonthlyAverageDatabaseGateway()
     average_calculator = MonthlyAverageCalculator(database_gateway)
 
-    category = request_data.category
-    category_data = CategoryData(id=category.id, name=category.name)
-    average = average_calculator.calculate_monthly_average(request_data.year, category_data)
+    year = average_request_data.year
+    category = average_request_data.category
+    average = average_calculator.calculate_monthly_average(year, category)
     
     data = {
         'average': average,
-        'category': asdict(category_data),
-        'year': request_data.year,
+        'year': year,
+        'category': asdict(category),
     }
     return JsonResponse(data, status=HTTPStatus.OK)
     
-def extract_monthly_average_request_data(query_data: Dict[str, any]) -> MonthlyAverageRequestData:
-    if not 'year' in query_data:
-        raise ValueError("Missing required parameter: year")
-    
-    try:
-        year = int(query_data['year'])
-    except ValueError:
-        raise ValueError("Invalid year format. Expected a number")
-    
-    if not 'category' in query_data:
-        raise ValueError("Missing required parameter: category")
-    
-    category_converter = CategoryConverter()
-    queried_category = query_data['category']
-    try:
-        category = category_converter.convert_to_category(queried_category)
-    except ValueError as e:
-        raise ValueError(str(e))
-
-    category_data = CategoryData(id=category.id, name=category.name)
-    return MonthlyAverageRequestData(year=year, category=category_data)
