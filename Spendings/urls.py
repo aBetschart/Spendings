@@ -24,6 +24,9 @@ urlpatterns = [
 
     path('', pages.HomeView.as_view(), name='home'),
     path('filter/', pages.FilterView.as_view(), name='filter'),
+    path('month/', pages.MonthView.as_view(), name='monthly_overview'),
+    path('year/', pages.YearView.as_view(), name='yearly_overview'),
+
     
     path('spending/submit/api', views_file.spending_submit, name='spending_submit_api'),
     path('spending/get/', views_file.spending_get, name='spending_get'),
@@ -40,9 +43,6 @@ urlpatterns = [
     path('categories/delete/<int:id>', views_file.category_delete, name='category_delete'),
     path('category/edit/<int:id>', views_file.category_edit, name='category_edit_api'),
     path('category/delete/<int:id>', views_file.category_delete, name='category_delete_api'),
-    
-    path('month', views_file.monthly_overview, name='monthly_overview'),
-    path('year', views_file.yearly_overview, name='yearly_overview'),
 
     path('average/monthly', views_file.monthly_average, name='monthly_average'),
 ]

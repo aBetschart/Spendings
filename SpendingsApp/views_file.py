@@ -15,7 +15,7 @@ from SpendingsApp.request_data_preparation.monthly_average.monthly_average_data_
 from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_extractor import SpendingFilterExtractor
 from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_request_data import SpendingFilterRequestData
 from .models import Category, Spending
-from .forms import SpendingFilterForm, SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
+from .forms import SpendingForm, CategoryForm, MonthlyOverviewForm, YearlyOverviewForm, MONTH_CHOICES
 
 from .database_gateways.finance.monthly_average.monthly_average_database_gateway import MonthlyAverageDatabaseGateway
 from .finance.monthly_average.monthly_average_calculator import MonthlyAverageCalculator
@@ -297,49 +297,6 @@ def category_delete(request: HttpRequest, id: int):
         'categories': categories,
     }
     return render(request, 'categories.html', args)
-
-
-
-# ------------------------------------------------------
-# ------------------------- MONTH  ---------------------
-# ------------------------------------------------------
-
-def monthly_overview(request: HttpRequest):
-    if request.method != 'GET':
-        return HttpResponseNotAllowed(permitted_methods=['GET'])
-
-    month_of_year = datetime.now()
-    month_form = setup_month_form(month_of_year)
-    
-    args = {
-        'monthForm': month_form,
-    }
-    return render(request, 'month.html', args)
-
-
-def setup_month_form(month_of_year: datetime) -> MonthlyOverviewForm:
-    monthIndex = month_of_year.month - 1
-    initial = {
-        'month': MONTH_CHOICES[monthIndex][0],
-        'year': month_of_year.year
-    }
-    return MonthlyOverviewForm(initial=initial)
-
-
-# ------------------------------------------------------
-# ------------------------- YEAR  ----------------------
-# ------------------------------------------------------
-
-def yearly_overview(request: HttpRequest):
-    if request.method != 'GET':
-        return HttpResponseNotAllowed(permitted_methods=['GET'])
-
-    year = datetime.now().year
-    initial = { 'year': year }
-    year_form = YearlyOverviewForm(initial=initial)
-
-    data = { 'year_form': year_form }
-    return render(request, "year.html", data)
 
 
 # ------------------------------------------------------
