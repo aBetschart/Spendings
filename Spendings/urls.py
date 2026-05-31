@@ -16,31 +16,33 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from SpendingsApp import views
+from SpendingsApp import views_file
+from SpendingsApp.views import pages
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
-    path('filter/', views.filter, name='filter'),
+
+    path('', pages.HomeView.as_view(), name='home'),
+    path('filter/', pages.FilterView.as_view(), name='filter'),
     
-    path('spending/submit/api', views.spending_submit, name='spending_submit_api'),
-    path('spending/get/', views.spending_get, name='spending_get'),
-    path('spending/get/recent', views.spending_get_recent, name='spending_get_recent'),
-    path('spending/delete/api/<int:id>', views.spending_delete, name='spending_delete_api'),
-    path('spending/edit/<int:id>', views.spending_view, name='spending_edit'),
-    path('spending/edit/api/<int:id>', views.spending_edit, name='spending_edit_api'),
+    path('spending/submit/api', views_file.spending_submit, name='spending_submit_api'),
+    path('spending/get/', views_file.spending_get, name='spending_get'),
+    path('spending/get/recent', views_file.spending_get_recent, name='spending_get_recent'),
+    path('spending/delete/api/<int:id>', views_file.spending_delete, name='spending_delete_api'),
+    path('spending/edit/<int:id>', views_file.spending_view, name='spending_edit'),
+    path('spending/edit/api/<int:id>', views_file.spending_edit, name='spending_edit_api'),
 
-    path('categories', views.categories, name='categories'),
-    path('categories/edit/<int:id>', views.category_view, name='category_edit'),
+    path('categories', views_file.categories, name='categories'),
+    path('categories/edit/<int:id>', views_file.category_view, name='category_edit'),
 
-    path('category/post', views.category_post, name='category_post'),
-    path('category/get', views.category_get, name='category_get'),
-    path('categories/delete/<int:id>', views.category_delete, name='category_delete'),
-    path('category/edit/<int:id>', views.category_edit, name='category_edit_api'),
-    path('category/delete/<int:id>', views.category_delete, name='category_delete_api'),
+    path('category/post', views_file.category_post, name='category_post'),
+    path('category/get', views_file.category_get, name='category_get'),
+    path('categories/delete/<int:id>', views_file.category_delete, name='category_delete'),
+    path('category/edit/<int:id>', views_file.category_edit, name='category_edit_api'),
+    path('category/delete/<int:id>', views_file.category_delete, name='category_delete_api'),
     
-    path('month', views.monthly_overview, name='monthly_overview'),
-    path('year', views.yearly_overview, name='yearly_overview'),
+    path('month', views_file.monthly_overview, name='monthly_overview'),
+    path('year', views_file.yearly_overview, name='yearly_overview'),
 
-    path('average/monthly', views.monthly_average, name='monthly_average'),
+    path('average/monthly', views_file.monthly_average, name='monthly_average'),
 ]

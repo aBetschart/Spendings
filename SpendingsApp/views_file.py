@@ -21,20 +21,6 @@ from .database_gateways.finance.monthly_average.monthly_average_database_gateway
 from .finance.monthly_average.monthly_average_calculator import MonthlyAverageCalculator
 
 
-def home(request: HttpRequest) -> HttpResponse:
-    if request.method != 'GET':
-        return HttpResponseNotAllowed(permitted_methods=['GET'])
-
-    data = { 'spendingForm': SpendingForm() }
-    return render(request, 'home.html', data)
-
-def filter(request: HttpRequest) -> HttpResponse:
-    spending_filter_form = SpendingFilterForm()
-    args = {
-        'spendingFilterForm': spending_filter_form,
-    }
-    return render(request, 'filter.html', args)
-
 # ------------------------------------------------------
 # ------------------------- SPENDING  ------------------
 # ------------------------------------------------------
