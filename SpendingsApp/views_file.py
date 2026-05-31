@@ -139,52 +139,6 @@ def spending_delete(request: HttpRequest, id: int) -> HttpResponse:
     return JsonResponse({"message": "Spending deleted"}, status=HTTPStatus.OK)
 
 
-def spending_view(request: HttpRequest, id: int) -> HttpResponse:
-    spending = Spending.objects.get(id=id)
-    if request.method == 'POST':
-        editedSpending = SpendingForm(data=request.POST, instance=spending)
-        if editedSpending.is_valid():
-            if 'delete_spending' in request.POST:
-                spending.delete()
-                return redirect('home')
-            else:
-                return HttpResponseNotAllowed(permitted_methods=['POST with delete_spending field'])
-
-    spending_form = SpendingForm(instance=spending)
-
-    args = { 'spendingForm': spending_form }
-    return render(request, 'spending.html', args)
-
-
-def spending_edit(request: HttpRequest, id: int) -> HttpResponse:
-    if request.method != "POST":
-        return HttpResponseNotAllowed(permitted_methods=['POST'])
-
-    post_data = request.POST.dict()
-
-    try:
-        spending = Spending.objects.get(pk=id)
-    except Spending.DoesNotExist:
-        return JsonResponse({"errors": "Spending not found"}, status=HTTPStatus.NOT_FOUND)
-
-    if 'category' in post_data:
-        post_data['category'] = convert_to_category_id(post_data['category'])
-
-    edited_form = SpendingForm(data=post_data, instance=spending)
-    if not edited_form.is_valid():
-        return JsonResponse({"errors": edited_form.errors}, status=HTTPStatus.BAD_REQUEST)
-
-    edited_form.save()
-
-    spending_dict = model_to_dict(spending)
-    spending_dict['category'] = model_to_dict(spending.category)
-    spending_dict['entryDate'] = spending.entryDate
-
-    return JsonResponse({"message": "Spending edited", "spending": spending_dict}, status=HTTPStatus.OK)
-
-
-
-
 # ------------------------------------------------------
 # ------------------------- OTHER  ---------------------
 # ------------------------------------------------------

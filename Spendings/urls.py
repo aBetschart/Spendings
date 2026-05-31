@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 
 from SpendingsApp import views_file
-from SpendingsApp.views import pages, category
+from SpendingsApp.views import pages, category, spending
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,12 +28,12 @@ urlpatterns = [
     path('year/', pages.YearView.as_view(), name='yearly_overview'),
 
     
-    path('spending/submit/api', views_file.spending_submit, name='spending_submit_api'),
+    path('spending/<int:id>', spending.SpendingView.as_view(), name='spending_view'),
     path('spending/get/', views_file.spending_get, name='spending_get'),
     path('spending/get/recent', views_file.spending_get_recent, name='spending_get_recent'),
+    path('spending/submit/api', views_file.spending_submit, name='spending_submit_api'),
+    path('spending/edit/<int:id>', spending.SpendingEditApi.as_view(), name='spending_edit'),
     path('spending/delete/api/<int:id>', views_file.spending_delete, name='spending_delete_api'),
-    path('spending/edit/<int:id>', views_file.spending_view, name='spending_edit'),
-    path('spending/edit/api/<int:id>', views_file.spending_edit, name='spending_edit_api'),
 
     path('categories', category.CategoryOverview.as_view(), name='categories'),
     path('categories/edit/<int:id>', category.CategoryEditView.as_view(), name='category_edit'),
