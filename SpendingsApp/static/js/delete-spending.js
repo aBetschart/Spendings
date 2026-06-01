@@ -5,7 +5,7 @@ $(document).on('click', '.delete-spending-btn', function() {
     const fadeOutDuration = 300;
     $.ajax({
         type: "POST",
-        url: `spending/delete/${spendingId}`,
+        url: `/spending/delete/${spendingId}`,
         data: {csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},
         success: function(_response) {
             const table_row = $(`button[data-spending-id='${spendingId}']`).closest('tr');
