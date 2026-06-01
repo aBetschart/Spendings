@@ -1,12 +1,14 @@
 
 import { renderSpendingsTbody } from './render-spendings-tbody.js';
 
+const SPENDING_COUNT = 10;
+
 export function updateRecentSpendings() {
     $.ajax({
-        type: "POST",
+        type: "GET",
         datatype: "json",
         contenttype: "application/json",
-        data: {spendings_count: 10, csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},
+        data: {spendings_count: SPENDING_COUNT, csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},
         url: DJANGO_URLS.spending_get_recent,
         success: function(data) {
             const spendings = data.spendings || [];

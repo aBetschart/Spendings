@@ -5,7 +5,8 @@ from django.forms.models import model_to_dict
 
 from SpendingsApp.models import Category, Spending
 
-# Spending realted
+# Spending related
+
 def calculate_total(spendings: List[Spending]) -> float:
     sum = 0
     for spending in spendings:
@@ -15,7 +16,7 @@ def calculate_total(spendings: List[Spending]) -> float:
 def convert_spendings_to_dict(spendings: List[Spending]) -> List[Dict[str, any]]:
     dicts: List[Dict[str, any]] = []
     for spending in spendings:
-        spending_dict = model_to_dict(spending)
+        spending_dict = convert_spending_to_dict(spending)
         dicts.append(spending_dict)
     return dicts
 

@@ -26,21 +26,19 @@ urlpatterns = [
     path('filter/', pages.FilterView.as_view(), name='filter'),
     path('month/', pages.MonthView.as_view(), name='monthly_overview'),
     path('year/', pages.YearView.as_view(), name='yearly_overview'),
-
     
     path('spending/<int:id>', spending.SpendingView.as_view(), name='spending_view'),
-    path('spending/get/', views_file.spending_get, name='spending_get'),
-    path('spending/get/recent', views_file.spending_get_recent, name='spending_get_recent'),
-    path('spending/submit/api', views_file.spending_submit, name='spending_submit_api'),
+    path('spending/get', spending.SpendingGetApi.as_view(), name='spending_get'),
+    path('spending/get/recent', spending.SpendingGetRecentApi.as_view(), name='spending_get_recent'),
+    path('spending/post', spending.SpendingPostApi.as_view(), name='spending_post'),
     path('spending/edit/<int:id>', spending.SpendingEditApi.as_view(), name='spending_edit'),
-    path('spending/delete/api/<int:id>', views_file.spending_delete, name='spending_delete_api'),
+    path('spending/delete/<int:id>', spending.SpendingDeleteApi.as_view(), name='spending_delete'),
 
     path('categories', category.CategoryOverview.as_view(), name='categories'),
-    path('categories/edit/<int:id>', category.CategoryEditView.as_view(), name='category_edit'),
-
-    path('category/post', category.CategoryPostApi.as_view(), name='category_post'),
+    path('category/<int:id>', category.CategoryEditView.as_view(), name='category_view'),
     path('category/get', category.CategoryGetApi.as_view(), name='category_get'),
-    path('category/edit/<int:id>', category.CategoryEditApi.as_view(), name='category_edit_api'),
+    path('category/post', category.CategoryPostApi.as_view(), name='category_post'),
+    path('category/edit/<int:id>', category.CategoryEditApi.as_view(), name='category_edit'),
     path('category/delete/<int:id>', category.CategoryDeleteApi.as_view(), name='category_delete'),
 
     path('average/monthly', views_file.monthly_average, name='monthly_average'),

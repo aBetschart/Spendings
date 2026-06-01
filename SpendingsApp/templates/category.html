@@ -7,7 +7,7 @@
     <h2>Edit Category</h2>
     <br>
 
-    <form id="category-form" method="post" url="{% url 'category_edit_api' categoryForm.instance.id %}">
+    <form id="category-form" method="post" url="{% url 'category_edit' categoryForm.instance.id %}">
         {% csrf_token %}
         <div class="row">
             <div class="col">
