@@ -16,8 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from SpendingsApp import views_file
-from SpendingsApp.views import pages, category, spending
+from SpendingsApp.views import pages, category, spending, api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -41,5 +40,5 @@ urlpatterns = [
     path('category/edit/<int:id>', category.CategoryEditApi.as_view(), name='category_edit'),
     path('category/delete/<int:id>', category.CategoryDeleteApi.as_view(), name='category_delete'),
 
-    path('average/monthly', views_file.monthly_average, name='monthly_average'),
+    path('average/monthly', api.MonthlyAverageApi.as_view(), name='monthly_average'),
 ]
