@@ -7,7 +7,7 @@
     <h2>Edit spending</h2>
     <br>
 
-    <form id="edit-spending-form" action="" method="post" data-edit-url="{% url 'spending_edit_api' spendingForm.instance.id %}">
+    <form id="edit-spending-form" action="" method="post" data-edit-url="{% url 'spending_edit' spendingForm.instance.id %}">
         {% csrf_token %}
         <div class="row mb-3">
             <div class="col">
@@ -26,16 +26,9 @@
             </div>
         </div>
         <div class="row mb-3">
-
-            
             <div class="col">
                 <button id="edit-spending-api-button" type="button" class="btn btn-outline-secondary form-control">
                     <i class="bi bi-save"></i>
-                </button>
-            </div>
-            <div class="col">
-                <button type="submit" name="delete-spending" class="btn btn-outline-danger form-control">
-                    <i class="bi bi-trash"></i>
                 </button>
             </div>
         </div>

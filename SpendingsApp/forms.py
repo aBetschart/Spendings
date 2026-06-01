@@ -3,6 +3,11 @@ from .models import Category, Spending
 
 
 class SpendingForm(forms.ModelForm):
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.order_by('name'),
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = Spending
         exclude = ['entryDate']
@@ -10,7 +15,6 @@ class SpendingForm(forms.ModelForm):
             "spendingDate": forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'placeholder': 'Spent on'}),
             'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Description'}),
             'amount': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Amount'}),
-            'category': forms.Select(attrs={'class': 'form-control'}),
         }
 
 class SpendingFilterForm(forms.Form):

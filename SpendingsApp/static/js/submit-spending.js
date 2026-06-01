@@ -17,7 +17,7 @@ function submitSpending() {
     
     return $.ajax({
         type: "POST",
-        url: DJANGO_URLS.spending_submit_api,
+        url: DJANGO_URLS.spending_post,
         data: formData,
         processData: false,
         contentType: false,

@@ -13,7 +13,7 @@ export function renderCategoriesTbody(categories) {
         const buttonClasses = "btn btn-sm py-0 px-1";
 
         const editButton = document.createElement('a');
-        editButton.href = `categories/edit/${category.id}`;
+        editButton.href = `category/${category.id}`;
         editButton.className = `${buttonClasses} btn-outline-secondary`;
         const editIcon = document.createElement('i');
         editIcon.className = 'bi bi-pencil';

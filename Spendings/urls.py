@@ -16,31 +16,29 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from SpendingsApp import views
+from SpendingsApp.views import pages, category, spending, api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
-    path('filter/', views.filter, name='filter'),
+
+    path('', pages.HomeView.as_view(), name='home'),
+    path('filter/', pages.FilterView.as_view(), name='filter'),
+    path('month/', pages.MonthView.as_view(), name='monthly_overview'),
+    path('year/', pages.YearView.as_view(), name='yearly_overview'),
     
-    path('spending/submit/api', views.spending_submit, name='spending_submit_api'),
-    path('spending/get/', views.spending_get, name='spending_get'),
-    path('spending/get/recent', views.spending_get_recent, name='spending_get_recent'),
-    path('spending/delete/api/<int:id>', views.spending_delete, name='spending_delete_api'),
-    path('spending/edit/<int:id>', views.spending_view, name='spending_edit'),
-    path('spending/edit/api/<int:id>', views.spending_edit, name='spending_edit_api'),
+    path('spending/<int:id>', spending.SpendingView.as_view(), name='spending_view'),
+    path('spending/get', spending.SpendingGetApi.as_view(), name='spending_get'),
+    path('spending/get/recent', spending.SpendingGetRecentApi.as_view(), name='spending_get_recent'),
+    path('spending/post', spending.SpendingPostApi.as_view(), name='spending_post'),
+    path('spending/edit/<int:id>', spending.SpendingEditApi.as_view(), name='spending_edit'),
+    path('spending/delete/<int:id>', spending.SpendingDeleteApi.as_view(), name='spending_delete'),
 
-    path('categories', views.categories, name='categories'),
-    path('categories/edit/<int:id>', views.category_view, name='category_edit'),
+    path('categories', category.CategoryOverview.as_view(), name='categories'),
+    path('category/<int:id>', category.CategoryEditView.as_view(), name='category_view'),
+    path('category/get', category.CategoryGetApi.as_view(), name='category_get'),
+    path('category/post', category.CategoryPostApi.as_view(), name='category_post'),
+    path('category/edit/<int:id>', category.CategoryEditApi.as_view(), name='category_edit'),
+    path('category/delete/<int:id>', category.CategoryDeleteApi.as_view(), name='category_delete'),
 
-    path('category/post', views.category_post, name='category_post'),
-    path('category/get', views.category_get, name='category_get'),
-    path('categories/delete/<int:id>', views.category_delete, name='category_delete'),
-    path('category/edit/<int:id>', views.category_edit, name='category_edit_api'),
-    path('category/delete/<int:id>', views.category_delete, name='category_delete_api'),
-    
-    path('month', views.monthly_overview, name='monthly_overview'),
-    path('year', views.yearly_overview, name='yearly_overview'),
-
-    path('average/monthly', views.monthly_average, name='monthly_average'),
+    path('average/monthly', api.MonthlyAverageApi.as_view(), name='monthly_average'),
 ]
