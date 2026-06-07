@@ -1,5 +1,6 @@
 from django import forms
 from .models import Category, Spending
+from django.contrib.auth.forms import AuthenticationForm
 
 
 class SpendingForm(forms.ModelForm):
@@ -64,3 +65,15 @@ class YearlyOverviewForm(forms.Form):
     year.widget.attrs.update({'class': 'form-control', 'placeholder': 'year'})
     year.label = ""
     
+
+class CustomAuthenticationForm(AuthenticationForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'username'
+        })
+        self.fields['password'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'password'
+        })
