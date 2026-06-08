@@ -3,8 +3,9 @@ from http import HTTPStatus
 from unicodedata import category
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
-from django.views.generic import TemplateView, View
 from django.shortcuts import render
+
+from SpendingsApp.views.auth_views import AuthenticatedTemplateView, AuthenticatedView
 from django.forms.models import model_to_dict
 
 from SpendingsApp.forms import CategoryForm
@@ -17,7 +18,7 @@ from .util import get_category_from_id, is_category_name_used, is_category_used
 # ------------------------------
 
 
-class CategoryOverview(TemplateView):
+class CategoryOverview(AuthenticatedTemplateView):
     template_name = 'categories.html'
 
     def get_context_data(self, **kwargs):
@@ -26,7 +27,7 @@ class CategoryOverview(TemplateView):
         context["categories"] = Category.objects.order_by('name')        
         return context
     
-class CategoryEditView(View):
+class CategoryEditView(AuthenticatedView):
     template_name = 'category.html'
 
     def get(self, request: HttpRequest, id: int) -> HttpResponse:
@@ -43,7 +44,7 @@ class CategoryEditView(View):
 # ---------- API
 # ------------------------------
 
-class CategoryEditApi(View):
+class CategoryEditApi(AuthenticatedView):
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
             category = get_category_from_id(id)
@@ -66,7 +67,7 @@ class CategoryEditApi(View):
         return JsonResponse(response_data, status=HTTPStatus.OK)
 
 
-class CategoryDeleteApi(View):
+class CategoryDeleteApi(AuthenticatedView):
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
             category = get_category_from_id(id)
@@ -83,7 +84,7 @@ class CategoryDeleteApi(View):
         response_data = {"message": message}
         return JsonResponse(response_data, status=HTTPStatus.OK)
     
-class CategoryGetApi(View):
+class CategoryGetApi(AuthenticatedView):
     def get(self, request: HttpRequest) -> HttpResponse:
         categories = Category.objects.order_by('name')
         category_list = [model_to_dict(category) for category in categories]
@@ -91,7 +92,7 @@ class CategoryGetApi(View):
         return JsonResponse(response_data, safe=False, status=HTTPStatus.OK)
 
 
-class CategoryPostApi(View):
+class CategoryPostApi(AuthenticatedView):
     def post(self, request: HttpRequest) -> HttpResponse:
         category_form = CategoryForm(request.POST)
         if not category_form.is_valid():

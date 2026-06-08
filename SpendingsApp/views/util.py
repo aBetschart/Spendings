@@ -1,9 +1,8 @@
-
-
 from typing import Dict, List
 from django.forms.models import model_to_dict
 
 from SpendingsApp.models import Category, Spending
+
 
 # Spending related
 

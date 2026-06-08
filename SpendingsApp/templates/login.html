@@ -13,7 +13,8 @@
               <h4 class="card-subtitle">to save and buy <i class="bi bi-currency-bitcoin"></i>itcoin</h4>
           </div>
           <div class="card-body">
-              <form id="login-form" class="form">
+              <form id="login-form" class="form" method="post" action="{% url 'login' %}">
+                  {% csrf_token %}
                   <div class="form-group">
                       <span class="input-group-text mb-3 mx-4 text-secondary">
                         <i class="bi bi-person me-3"></i>

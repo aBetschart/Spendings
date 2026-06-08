@@ -4,7 +4,7 @@ from dataclasses import asdict
 from http import HTTPStatus
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
-from django.views import View
+from SpendingsApp.views.auth_views import AuthenticatedView
 
 from SpendingsApp.database_gateways.database_category_converter import DatabaseCategoryConverter
 from SpendingsApp.database_gateways.finance.monthly_average.monthly_average_database_gateway import MonthlyAverageDatabaseGateway
@@ -12,7 +12,7 @@ from SpendingsApp.finance.monthly_average.monthly_average_calculator import Mont
 from SpendingsApp.request_data_preparation.monthly_average.monthly_average_data_preparer import MonthlyAverageDataPreparer
 
 
-class MonthlyAverageApi(View):
+class MonthlyAverageApi(AuthenticatedView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._category_converter = DatabaseCategoryConverter()

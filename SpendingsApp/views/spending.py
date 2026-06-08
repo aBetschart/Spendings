@@ -3,8 +3,9 @@ from typing import Dict, List
 from http import HTTPStatus
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
-from django.views.generic import View
 from django.shortcuts import render
+
+from SpendingsApp.views.auth_views import AuthenticatedView
 
 from SpendingsApp.database_gateways.database_category_converter import DatabaseCategoryConverter
 from SpendingsApp.database_gateways.filtering.spending_filter_database_gateway import SpendingFilterDatabaseGateway
@@ -20,7 +21,7 @@ from .util import get_spending_from_id, convert_spending_to_dict, convert_spendi
 # ---------- Views
 # ------------------------------
 
-class SpendingView(View):
+class SpendingView(AuthenticatedView):
     def get(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
             spending = get_spending_from_id(id)
@@ -37,7 +38,7 @@ class SpendingView(View):
 # ------------------------------
 
 
-class SpendingEditApi(View):
+class SpendingEditApi(AuthenticatedView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._category_converter = DatabaseCategoryConverter()
@@ -75,7 +76,7 @@ class SpendingEditApi(View):
     
 
 
-class SpendingGetApi(View):
+class SpendingGetApi(AuthenticatedView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._filter_extractor = SpendingFilterExtractor()
@@ -105,7 +106,7 @@ class SpendingGetApi(View):
     
 
 
-class SpendingGetRecentApi(View):
+class SpendingGetRecentApi(AuthenticatedView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._preparer = SpendingsCountPreparer()
@@ -123,7 +124,7 @@ class SpendingGetRecentApi(View):
     
 
 
-class SpendingPostApi(View):
+class SpendingPostApi(AuthenticatedView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._category_converter = DatabaseCategoryConverter()
@@ -149,7 +150,7 @@ class SpendingPostApi(View):
     
 
 
-class SpendingDeleteApi(View):
+class SpendingDeleteApi(AuthenticatedView):
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
             spending = get_spending_from_id(id)
