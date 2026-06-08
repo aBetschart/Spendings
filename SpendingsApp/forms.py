@@ -11,7 +11,7 @@ class SpendingForm(forms.ModelForm):
 
     class Meta:
         model = Spending
-        exclude = ['entryDate']
+        exclude = ['entryDate', 'user']
         widgets = {
             "spendingDate": forms.DateInput(attrs={'type': 'date', 'class': 'form-control', 'placeholder': 'Spent on'}),
             'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Description'}),
@@ -28,9 +28,8 @@ class SpendingFilterForm(forms.Form):
        
 class CategoryForm(forms.ModelForm):
     class Meta:
-        fields="__all__"
         model = Category
-
+        fields=['name']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'})
         }

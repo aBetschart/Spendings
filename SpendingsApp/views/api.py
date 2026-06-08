@@ -11,6 +11,7 @@ from SpendingsApp.database_gateways.finance.monthly_average.monthly_average_data
 from SpendingsApp.finance.monthly_average.monthly_average_calculator import MonthlyAverageCalculator
 from SpendingsApp.request_data_preparation.monthly_average.monthly_average_data_preparer import MonthlyAverageDataPreparer
 
+# TODO: Multi-User support
 
 class MonthlyAverageApi(AuthenticatedView):
     def __init__(self, **kwargs):

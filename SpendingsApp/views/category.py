@@ -11,7 +11,7 @@ from django.forms.models import model_to_dict
 from SpendingsApp.forms import CategoryForm
 from SpendingsApp.models import Category
 
-from .util import get_category_from_id, is_category_name_used, is_category_used
+from .util import get_category_from_id, is_category_name_used_by_user, is_category_used
 
 # ------------------------------
 # ---------- Views 
@@ -23,8 +23,7 @@ class CategoryOverview(AuthenticatedTemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["categoryForm"] = CategoryForm()
-        context["categories"] = Category.objects.order_by('name')        
+        context["categoryForm"] = CategoryForm()  
         return context
     
 class CategoryEditView(AuthenticatedView):
@@ -32,7 +31,7 @@ class CategoryEditView(AuthenticatedView):
 
     def get(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
-            category = get_category_from_id(id)
+            category = get_category_from_id(id, request.user)
         except ValueError as error:
             return HttpResponseBadRequest(str(error))
         
@@ -47,7 +46,7 @@ class CategoryEditView(AuthenticatedView):
 class CategoryEditApi(AuthenticatedView):
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
-            category = get_category_from_id(id)
+            category = get_category_from_id(id, request.user)
         except ValueError as error:
             return HttpResponseBadRequest(str(error))
         
@@ -56,8 +55,8 @@ class CategoryEditApi(AuthenticatedView):
             return HttpResponseBadRequest(f"Invalid form data: {category_form.errors}")
         
         name = category_form.cleaned_data['name']
-        if is_category_name_used(name):
-            return HttpResponseBadRequest(f"Another category already has the name '{name}'.")
+        if is_category_name_used_by_user(name, request.user):
+            return HttpResponseBadRequest(f"Another of your categories already has the name '{name}'.")
 
         category_form.save()
 
@@ -70,10 +69,10 @@ class CategoryEditApi(AuthenticatedView):
 class CategoryDeleteApi(AuthenticatedView):
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
-            category = get_category_from_id(id)
+            category = get_category_from_id(id, request.user)
         except ValueError as error:
             return HttpResponseBadRequest(str(error))
-        
+
         if is_category_used(category):
             message = f"Category with id {id} is currently in use and cannot be deleted."
             return HttpResponseBadRequest(message)
@@ -84,9 +83,10 @@ class CategoryDeleteApi(AuthenticatedView):
         response_data = {"message": message}
         return JsonResponse(response_data, status=HTTPStatus.OK)
     
+    
 class CategoryGetApi(AuthenticatedView):
     def get(self, request: HttpRequest) -> HttpResponse:
-        categories = Category.objects.order_by('name')
+        categories = Category.objects.filter(user=request.user).order_by('name')
         category_list = [model_to_dict(category) for category in categories]
         response_data = {"categories": category_list}
         return JsonResponse(response_data, safe=False, status=HTTPStatus.OK)
@@ -99,12 +99,14 @@ class CategoryPostApi(AuthenticatedView):
             return HttpResponseBadRequest(f"Invalid form data: {category_form.errors}")
         
         name = category_form.cleaned_data['name']
-        if is_category_name_used(name):
+        if is_category_name_used_by_user(name, request.user):
             return HttpResponseBadRequest(f"Category with name '{name}' already exists.")
 
-        new_cateogry = category_form.save()
+        new_category = category_form.save(commit=False)
+        new_category.user = request.user
+        new_category.save()
 
-        category_dict = model_to_dict(new_cateogry)
+        category_dict = model_to_dict(new_category)
         message = "Category created successfully"
         response_data = {"message": message, "category": category_dict}
         return JsonResponse(response_data, status=HTTPStatus.OK)

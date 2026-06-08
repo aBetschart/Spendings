@@ -3,6 +3,7 @@ from typing import Dict, List
 from http import HTTPStatus
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.contrib.auth.models import User
 from django.shortcuts import render
 
 from SpendingsApp.views.auth_views import AuthenticatedView
@@ -24,10 +25,10 @@ from .util import get_spending_from_id, convert_spending_to_dict, convert_spendi
 class SpendingView(AuthenticatedView):
     def get(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
-            spending = get_spending_from_id(id)
+            spending = get_spending_from_id(id, request.user)
         except ValueError as error:
             return HttpResponseBadRequest(str(error))
-        
+
         spending_form = SpendingForm(instance=spending)
         context = {'spendingForm': spending_form}
         return render(request, 'spending.html', context)
@@ -45,7 +46,7 @@ class SpendingEditApi(AuthenticatedView):
 
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
-            spending = get_spending_from_id(id)
+            spending = get_spending_from_id(id, request.user)
         except ValueError as error:
             return HttpResponseBadRequest(str(error))
         
@@ -62,8 +63,8 @@ class SpendingEditApi(AuthenticatedView):
         
         form.save()
 
-        spending_dict = convert_spending_to_dict(spending)
         message = "Spending edited successfully."
+        spending_dict = convert_spending_to_dict(spending)
         data = {
             "message": message,
             "spending": spending_dict
@@ -76,12 +77,13 @@ class SpendingEditApi(AuthenticatedView):
     
 
 
-class SpendingGetApi(AuthenticatedView):
+class SpendingGetApi(AuthenticatedView): 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._filter_extractor = SpendingFilterExtractor()
         self._database_gateway = SpendingFilterDatabaseGateway()
 
+    #TODO: Multi-User support
     def get(self, request: HttpRequest) -> HttpResponse:
         request_data = SpendingFilterRequestData(
             start_date=request.GET.get('start_date'),
@@ -113,14 +115,14 @@ class SpendingGetRecentApi(AuthenticatedView):
 
     def get(self, request: HttpRequest) -> HttpResponse:
         spendings_count = self._preparer.extract_spendings_count(request.GET)
-        spendings = self._get_recent_spendings(spendings_count)
+        spendings = self._get_recent_spendings(request.user, spendings_count)
         spending_dicts = convert_spendings_to_dict(spendings)
         data = { 'spendings': spending_dicts }
         return JsonResponse(data, status=HTTPStatus.OK)
     
-    def _get_recent_spendings(self, spendings_count: int) -> List[Spending]:
+    def _get_recent_spendings(self, user: User, spendings_count: int) -> List[Spending]:
         order = '-entryDate'
-        return Spending.objects.order_by(order)[:spendings_count]    
+        return Spending.objects.filter(user=user).order_by(order)[:spendings_count]
     
 
 
@@ -136,7 +138,9 @@ class SpendingPostApi(AuthenticatedView):
         if not form.is_valid():
             return HttpResponseBadRequest(str(form.errors))
         
-        new_spending = form.save()
+        new_spending = form.save(commit=False)
+        new_spending.user = request.user
+        new_spending.save()
 
         spending_dict = convert_spending_to_dict(new_spending)
         data = { "message": "Spending submitted successfully.", "spending": spending_dict }
@@ -153,7 +157,7 @@ class SpendingPostApi(AuthenticatedView):
 class SpendingDeleteApi(AuthenticatedView):
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
-            spending = get_spending_from_id(id)
+            spending = get_spending_from_id(id, request.user)
         except ValueError as error:
             return HttpResponseBadRequest(str(error))
 
