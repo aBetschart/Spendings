@@ -1,6 +1,6 @@
 
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict
 
 from SpendingsApp.finance.category_data import CategoryData
 from SpendingsApp.finance.user_data import UserData

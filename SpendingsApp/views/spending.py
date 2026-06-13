@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonR
 from django.contrib.auth.models import User
 from django.shortcuts import render
 
+from SpendingsApp.database_gateways.database_user_converter import DatabaseUserConverter
 from SpendingsApp.views.auth_views import AuthenticatedView
 
 from SpendingsApp.database_gateways.database_category_converter import DatabaseCategoryConverter
@@ -80,18 +81,19 @@ class SpendingEditApi(AuthenticatedView):
 class SpendingGetApi(AuthenticatedView): 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._filter_extractor = SpendingFilterExtractor()
+        user_converter = DatabaseUserConverter()
+        self._filter_extractor = SpendingFilterExtractor(user_converter)
         self._database_gateway = SpendingFilterDatabaseGateway()
 
-    #TODO: Multi-User support
     def get(self, request: HttpRequest) -> HttpResponse:
         request_data = SpendingFilterRequestData(
+            user=request.user,
             start_date=request.GET.get('start_date'),
             end_date=request.GET.get('end_date'),
             category_ids=request.GET.getlist('categories'),
             min_amount=request.GET.get('min_amount'),
             max_amount=request.GET.get('max_amount'),
-            description=request.GET.get('description', "")
+            description=request.GET.get('description', ""),
         )
 
         try:

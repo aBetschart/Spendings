@@ -1,18 +1,27 @@
 
 import sys
 import pytest
+from unittest.mock import Mock
 from typing import List
 from datetime import date
 
+from SpendingsApp.finance.user_data import UserData
 from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_data import AmountRange
 from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_extractor import SpendingFilterExtractor
 from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_request_data import SpendingFilterRequestData
-
+from SpendingsApp.request_data_preparation.user_converter import UserConverter
 
 
 @pytest.fixture
-def extractor() -> SpendingFilterExtractor:
-    return SpendingFilterExtractor()
+def user_converter_mock() -> Mock:
+    mock = Mock(spec=UserConverter)
+    mock.convert_to_user.return_value = UserData(id=12, name="name")
+    return mock
+    
+
+@pytest.fixture
+def extractor(user_converter_mock: Mock) -> SpendingFilterExtractor:
+    return SpendingFilterExtractor(user_converter_mock)
 
 @pytest.fixture
 def example_request_data() -> SpendingFilterRequestData:
@@ -24,7 +33,8 @@ def get_example_request_data(
             category_ids: List[str] = [1, 2, 3],
             min_amount: float = 10.0,
             max_amount: float = 100.0,
-            description: str = "Test description"
+            description: str = "Test description",
+            user: any = 100,
         ) -> SpendingFilterRequestData:
     return SpendingFilterRequestData(
         start_date=start_date,
@@ -32,7 +42,8 @@ def get_example_request_data(
         category_ids=category_ids,
         min_amount=min_amount,
         max_amount=max_amount,
-        description=description
+        description=description,
+        user=user
     )
 
 
@@ -53,7 +64,9 @@ def test_extract_shouldRaiseException_IfEndDateNotAvailable(extractor: SpendingF
     "2025--01--01",
     "25-01-01",
 ])
-def test_extract_shouldRaiseException_IfStartDateIsNotIsoFormat(extractor: SpendingFilterExtractor, start_date_in: str) -> None:
+def test_extract_shouldRaiseException_IfStartDateIsNotIsoFormat(
+        extractor: SpendingFilterExtractor, 
+        start_date_in: str) -> None:
     request_data = get_example_request_data(start_date=start_date_in)
 
     with pytest.raises(ValueError):
@@ -167,5 +180,72 @@ def test_extract_shouldSetDescription(extractor: SpendingFilterExtractor, descri
 
     expected = description
     actual = filter_data.description
+    assert expected == actual
+
+def test_extract_shouldRaiseExceptionIfUserIsNotAvailable(extractor: SpendingFilterExtractor) -> None:
+    request_data = get_example_request_data(user=None)
+
+    with pytest.raises(ValueError) as error:
+        extractor.extract_filter_data(request_data)
+
+    expected = "Missing required field: user."
+    actual = str(error.value)
+    assert expected == actual
+
+@pytest.mark.parametrize("error_message", [
+    "test123",
+    "ERROR!!!",
+    "Can not convert :(",
+])
+def test_extract_shouldRaiseExceptionIfUserNotConvertable(
+        extractor: SpendingFilterExtractor, 
+        user_converter_mock: Mock,
+        error_message: str) -> None:
+    request_data = get_example_request_data()
+    user_converter_mock.convert_to_user.side_effect = Exception(error_message)
+
+    with pytest.raises(Exception) as error:
+        extractor.extract_filter_data(request_data)
+        
+    expected = error_message
+    actual = str(error.value)
+    assert expected == actual
+    
+@pytest.mark.parametrize("user", [
+    UserData(id=20, name="gna gna"),
+    20,
+    "some username",
+])
+def test_extract_shouldUseRightUserToConvert(
+        extractor: SpendingFilterExtractor, user_converter_mock: Mock, user: any) -> None:
+    request_data = get_example_request_data(user=user)
+
+    extractor.extract_filter_data(request_data)
+
+    assert 1 == user_converter_mock.convert_to_user.call_count
+
+    call_args = user_converter_mock.convert_to_user.call_args.args
+    assert 1 == len(call_args)
+
+    expected = user
+    actual = call_args[0]
+    assert expected == actual
+
+@pytest.mark.parametrize("user_data", [
+    UserData(id=20, name="gna gna"),
+    UserData(id=1, name="Hello world"),
+    UserData(id=5987, name="some funny name"),
+])
+def test_extract_shouldReturnRightUserData(
+        extractor: SpendingFilterExtractor, 
+        user_converter_mock: Mock, 
+        user_data: UserData) -> None:
+    request_data = get_example_request_data()
+    user_converter_mock.convert_to_user.return_value = user_data
+
+    filter_data = extractor.extract_filter_data(request_data)
+
+    expected = user_data
+    actual = filter_data.user
     assert expected == actual
 

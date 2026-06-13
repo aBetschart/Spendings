@@ -1,10 +1,12 @@
 
 from typing import List
+from django.contrib.auth import get_user_model
 
 from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_data import SpendingFilterData
 from SpendingsApp.models import Spending
 from SpendingsApp.utils.date_range import DateRange
 
+User = get_user_model()
 
 class SpendingFilterDatabaseGateway:
     
@@ -12,7 +14,10 @@ class SpendingFilterDatabaseGateway:
         date_range: DateRange = filter_data.date_range
         start_date = date_range.start
         end_date = date_range.end
-        spendings = Spending.objects.filter(spendingDate__gte=start_date, spendingDate__lte=end_date)
+        user_data = filter_data.user
+
+        user = User.objects.get(id=user_data.id)
+        spendings = Spending.objects.filter(spendingDate__gte=start_date, spendingDate__lte=end_date, user=user)
 
         if filter_data.category_ids != []:
             spendings = spendings.filter(category__in=filter_data.category_ids)
