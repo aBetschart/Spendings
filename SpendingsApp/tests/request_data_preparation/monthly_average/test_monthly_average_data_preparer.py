@@ -6,8 +6,10 @@ from typing import Dict
 from unittest.mock import Mock
 
 from SpendingsApp.finance.category_data import CategoryData
+from SpendingsApp.finance.user_data import UserData
 from SpendingsApp.request_data_preparation.category_converter import CategoryConverter
 from SpendingsApp.request_data_preparation.monthly_average.monthly_average_data_preparer import MonthlyAverageDataPreparer
+from SpendingsApp.request_data_preparation.user_converter import UserConverter
 
 @pytest.fixture
 def category_converter_mock() -> CategoryConverter:
@@ -16,11 +18,18 @@ def category_converter_mock() -> CategoryConverter:
     return mock
 
 @pytest.fixture
-def data_preparer(category_converter_mock: Mock) -> MonthlyAverageDataPreparer:
-    return MonthlyAverageDataPreparer(category_converter_mock)
+def user_converter_mock() -> UserConverter:
+    mock = Mock(spec=UserConverter)
+    mock.convert_to_user.return_value = Mock(id=1, name="Test User")
+    return mock
 
-def get_example_request_data(year: int = 2020, category: str = "Test Category") -> Dict[str, any]:
-    return {"year": year, "category": category}
+@pytest.fixture
+def data_preparer(category_converter_mock: Mock, user_converter_mock: Mock) -> MonthlyAverageDataPreparer:
+    return MonthlyAverageDataPreparer(category_converter_mock, user_converter_mock)
+
+def get_example_request_data(
+        year: int = 2020, category: str = "Test Category", user: str = "user") -> Dict[str, any]:
+    return {"year": year, "category": category, "user": user}
 
 def test_extract_shouldRaiseException_IfYearIsMissing(data_preparer: MonthlyAverageDataPreparer) -> None:
     request_data = {"category": "Test Category"}
@@ -134,4 +143,76 @@ def test_extract_shouldRaiseExceptionIfCategoryInvalid(
 
     expected = error_message
     actual = str(error.value)
+    assert expected == actual
+
+def test_extract_shouldRaiseExceptionIfUserMissing( 
+        data_preparer: MonthlyAverageDataPreparer ) -> None:
+    request_data = get_example_request_data(user=None)
+    with pytest.raises(ValueError) as error:
+        data_preparer.extract_average_data(request_data)
+    
+    expected_message = "Missing required field: user"
+    actual_message = str(error.value)
+    assert expected_message == actual_message
+
+@pytest.mark.parametrize("error_message", [
+    "Some error",
+    "Invalid user",
+    "Conversion failed"
+])
+def test_extract_shouldRaiseExceptionIfUserInvalid(
+        data_preparer: MonthlyAverageDataPreparer,
+        user_converter_mock: Mock,
+        error_message: str) -> None:
+    user_converter_mock.convert_to_user.side_effect = ValueError(error_message)
+    request_data = get_example_request_data()
+    
+    with pytest.raises(ValueError) as error:
+        data_preparer.extract_average_data(request_data)
+    
+    expected_message = error_message
+    actual_message = str(error.value)
+    assert expected_message == actual_message
+
+@pytest.mark.parametrize("user_data", [
+    Mock(id=1, name="Test User"),
+    Mock(id=202, name="Another User"),
+    Mock(id=55, name="Some User")
+])
+def test_extract_shouldConvertRightUser(
+        data_preparer: MonthlyAverageDataPreparer,
+        user_converter_mock: Mock,
+        user_data: Mock) -> None:
+    request_data = get_example_request_data(user=user_data)
+
+    data_preparer.extract_average_data(request_data)
+
+    conversion_count = 1
+    assert conversion_count == user_converter_mock.convert_to_user.call_count
+    
+    conversion_arg_count = 1
+    call_args = user_converter_mock.convert_to_user.call_args.args
+    assert conversion_arg_count == len(call_args)
+
+    expected = user_data
+    actual = call_args[0]
+    assert expected == actual
+
+
+@pytest.mark.parametrize("user_data", {
+    UserData(id=1, name="Test User"),
+    UserData(id=202, name="Another User"),
+    UserData(id=55, name="Some User")
+})
+def test_extract_shouldReturnRightUser(
+        data_preparer: MonthlyAverageDataPreparer,
+        user_converter_mock: Mock,
+        user_data: UserData) -> None:
+    user_converter_mock.convert_to_user.return_value = user_data
+
+    request_data = get_example_request_data()
+    average_request_data = data_preparer.extract_average_data(request_data)
+
+    expected = user_data
+    actual = average_request_data.user
     assert expected == actual

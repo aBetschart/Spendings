@@ -2,6 +2,7 @@
 from datetime import date, timedelta
 
 from SpendingsApp.finance.category_data import CategoryData
+from SpendingsApp.finance.user_data import UserData
 from SpendingsApp.utils.date_range import DateRange
 from .monthly_average_data_gateway import MonthlyAverageDataGateway
 
@@ -9,9 +10,8 @@ from .monthly_average_data_gateway import MonthlyAverageDataGateway
 class MonthlyAverageCalculator:
     def __init__(self, data_gateway: MonthlyAverageDataGateway):
         self._data_gateway = data_gateway
-        
 
-    def calculate_monthly_average(self, year: int, category: CategoryData) -> float:
+    def calculate_monthly_average(self, year: int, category: CategoryData, user: UserData) -> float:
         if year < 0:
             raise ValueError(f"Year cannot be negative but was '{year}'.")
 
@@ -19,7 +19,7 @@ class MonthlyAverageCalculator:
             return 0
 
         date_range = self._calc_date_range(year)
-        amount = self._data_gateway.get_spending_amount(date_range, category)
+        amount = self._data_gateway.get_spending_amount(date_range, category, user)
         months_count = self._get_months_count(date_range)
         return amount / months_count
     
