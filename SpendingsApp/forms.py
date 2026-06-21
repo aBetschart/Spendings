@@ -30,8 +30,13 @@ class SpendingFilterForm(forms.Form):
     description = forms.CharField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Description'}))
     min_amount = forms.FloatField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Min amount'}))
     max_amount = forms.FloatField(required=False, widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Max amount'}))
-    categories = forms.ModelMultipleChoiceField(queryset=Category.objects.all(), required=False, widget=forms.SelectMultiple(attrs={'class': 'form-control'}))
-       
+    categories = forms.ModelMultipleChoiceField(queryset=Category.objects.none(), required=False, widget=forms.SelectMultiple(attrs={'class': 'form-control'}))
+
+    def __init__(self, *args, user: AbstractBaseUser = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['categories'].queryset = Category.objects.filter(user=user)
+
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category

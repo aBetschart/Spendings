@@ -1,6 +1,5 @@
 
 from http import HTTPStatus
-from unicodedata import category
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render
