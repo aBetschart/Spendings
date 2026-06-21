@@ -14,7 +14,7 @@ class MonthlyAverageDatabaseGateway(MonthlyAverageDataGateway):
     
     def get_spending_amount(self, date_range: DateRange, category: CategoryData, user: UserData) -> float:
         user = User.objects.get(id=user.id)
-        category = Category.objects.get(id=category.id)
+        category = Category.objects.get(id=category.id, user=user)
         spending_date_range = (date_range.start, date_range.end)
         spendings = Spending.objects.filter(spendingDate__range=spending_date_range, category=category, user=user)
         return sum(spending.amount for spending in spendings)

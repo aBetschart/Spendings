@@ -3,7 +3,8 @@ from typing import Dict, List
 from http import HTTPStatus
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
-from django.contrib.auth.models import User
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth import get_user_model
 from django.shortcuts import render
 
 from SpendingsApp.database_gateways.database_user_converter import DatabaseUserConverter
@@ -19,6 +20,10 @@ from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_re
 
 from .util import get_spending_from_id, convert_spending_to_dict, convert_spendings_to_dict, calculate_total
 
+
+User = get_user_model()
+
+
 # ------------------------------
 # ---------- Views
 # ------------------------------
@@ -30,7 +35,8 @@ class SpendingView(AuthenticatedView):
         except ValueError as error:
             return HttpResponseBadRequest(str(error))
 
-        spending_form = SpendingForm(instance=spending)
+        user = request.user
+        spending_form = SpendingForm(user=user, instance=spending)
         context = {'spendingForm': spending_form}
         return render(request, 'spending.html', context)
     
@@ -55,9 +61,10 @@ class SpendingEditApi(AuthenticatedView):
         if not 'category' in post_data:
             return HttpResponseBadRequest("Missing 'category' field in request data.")
         
+        user = request.user
         categord_id = self._get_category_id(post_data['category'])
         post_data['category'] = categord_id
-        form = SpendingForm(data=post_data, instance=spending)
+        form = SpendingForm(user=user, data=post_data, instance=spending)
 
         if not form.is_valid():
             return HttpResponseBadRequest(str(form.errors))
@@ -122,7 +129,7 @@ class SpendingGetRecentApi(AuthenticatedView):
         data = { 'spendings': spending_dicts }
         return JsonResponse(data, status=HTTPStatus.OK)
     
-    def _get_recent_spendings(self, user: User, spendings_count: int) -> List[Spending]:
+    def _get_recent_spendings(self, user: AbstractBaseUser, spendings_count: int) -> List[Spending]:
         order = '-entryDate'
         return Spending.objects.filter(user=user).order_by(order)[:spendings_count]
     
@@ -135,24 +142,25 @@ class SpendingPostApi(AuthenticatedView):
 
     def post(self, request: HttpRequest) -> HttpResponse:
         post_data = request.POST.dict()
-        form = self._convert_to_form(post_data)
+        user = request.user
+        form = self._convert_to_form(post_data, user)
 
         if not form.is_valid():
             return HttpResponseBadRequest(str(form.errors))
         
         new_spending = form.save(commit=False)
-        new_spending.user = request.user
+        new_spending.user = user
         new_spending.save()
 
         spending_dict = convert_spending_to_dict(new_spending)
         data = { "message": "Spending submitted successfully.", "spending": spending_dict }
         return JsonResponse(data, status=HTTPStatus.OK)
     
-    def _convert_to_form(self, post_data: Dict[str, any]) -> SpendingForm:
+    def _convert_to_form(self, post_data: Dict[str, any], user: AbstractBaseUser) -> SpendingForm:
         posted_category = post_data.get('category')
         category = self._category_converter.convert_to_category(posted_category)
         post_data['category'] = category.id
-        return SpendingForm(data=post_data)
+        return SpendingForm(user=user, data=post_data)
     
 
 

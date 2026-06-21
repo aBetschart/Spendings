@@ -1,13 +1,19 @@
 from django import forms
+
 from .models import Category, Spending
 from django.contrib.auth.forms import AuthenticationForm
-
+from django.contrib.auth.base_user import AbstractBaseUser
 
 class SpendingForm(forms.ModelForm):
     category = forms.ModelChoiceField(
-        queryset=Category.objects.order_by('name'),
+        queryset=Category.objects.none(),
         widget=forms.Select(attrs={'class': 'form-control'})
     )
+
+    def __init__(self, *args, user: AbstractBaseUser = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None:
+            self.fields['category'].queryset = Category.objects.filter(user=user)
 
     class Meta:
         model = Spending

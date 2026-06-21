@@ -9,7 +9,8 @@ class HomeView(AuthenticatedTemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["spendingForm"] = SpendingForm()
+        user = self.request.user
+        context["spendingForm"] = SpendingForm(user=user)
         return context
     
 
