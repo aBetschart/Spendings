@@ -20,6 +20,20 @@
           <a class="nav-link" href="{% url 'filter' %}"><i class="bi bi-search"></i> Filter</a>
         </li>
       </ul>
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ request.user.username}} <i class="bi bi-file-person"></i>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{% url 'settings' %}"> <i class="bi bi-gear"></i> Settings</a></li>
+            <form method="post" action="{% url 'logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right"></i> Logout</button>
+          </form>
+          </ul>
+        </li>
+      </ul>
     </div>
   </div>
 </nav>

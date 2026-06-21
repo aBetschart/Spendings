@@ -19,12 +19,14 @@ from django.contrib import admin
 from django.urls import path
 
 from SpendingsApp.forms import CustomAuthenticationForm
-from SpendingsApp.views import pages, category, spending, api
+from SpendingsApp.views import pages, category, spending, api, auth
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('login/', django.contrib.auth.views.LoginView.as_view(template_name='login.html', form_class=CustomAuthenticationForm), name='login'),
+    path('logout/', auth.LogoutApi.as_view(), name='logout'),
+    path('settings/', auth.AccountSettingsView.as_view(), name='settings'),
 
     path('', pages.HomeView.as_view(), name='home'),
     path('filter/', pages.FilterView.as_view(), name='filter'),
