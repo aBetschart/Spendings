@@ -5,7 +5,7 @@
 
 <div id="change-password-container" class="container">
     <h2>Change your password</h2>
-    <form id="change-password-form" method="post" action="#">
+    <form id="change-password-form">
         {% csrf_token %}
         <div class="row my-3">
             <div class="col"><input type="password" class="form-control" id="old-password" name="old-password" placeholder="Old Password" required></div>
@@ -22,5 +22,13 @@
     </form>
 </div>
 
+
+
+{% endblock %}
+
+{% block extra_scripts %}
+
+{% load static %}
+<script type="module" src="{% static 'js/auth/change-password.js' %}"></script>
 
 {% endblock %}

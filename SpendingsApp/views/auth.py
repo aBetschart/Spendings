@@ -22,7 +22,9 @@ class LogoutApi(AuthenticatedView):
 NEW_PASSWORD_FIELD = 'NewPassword'
 OLD_PASSWORD_FIELD = 'OldPassword'
 
-class ChangePassowrdApi(AuthenticatedView):
+PASSWORD_MIN_LENGTH = 8
+
+class ChangePasswordApi(AuthenticatedView):
     def post(self, request: HttpRequest) -> HttpResponse:
         old_password = request.POST.get(OLD_PASSWORD_FIELD)
         if old_password is None:
@@ -34,6 +36,9 @@ class ChangePassowrdApi(AuthenticatedView):
         
         if not self._is_password_correct(request.user, old_password):
             return HttpResponseBadRequest("Old password is incorrect.")
+        
+        if not len(new_password) >= PASSWORD_MIN_LENGTH:
+            return HttpResponseBadRequest(f"New password must be at least {PASSWORD_MIN_LENGTH} characters long.")
 
         try:
             user = request.user

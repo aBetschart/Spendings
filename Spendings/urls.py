@@ -27,6 +27,7 @@ urlpatterns = [
     path('login/', django.contrib.auth.views.LoginView.as_view(template_name='login.html', form_class=CustomAuthenticationForm), name='login'),
     path('logout/', auth.LogoutApi.as_view(), name='logout'),
     path('settings/', auth.AccountSettingsView.as_view(), name='settings'),
+    path('settings/change-password/', auth.ChangePasswordApi.as_view(), name='change_password'),
 
     path('', pages.HomeView.as_view(), name='home'),
     path('filter/', pages.FilterView.as_view(), name='filter'),
