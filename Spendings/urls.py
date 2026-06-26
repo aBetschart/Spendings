@@ -24,6 +24,8 @@ from SpendingsApp.views import pages, category, spending, api, auth
 urlpatterns = [
     path('admin/', admin.site.urls),
 
+    path('register/', auth.RegisterView.as_view(), name='register'),
+    path('user/add', auth.RegisterApi.as_view(), name='user_add'),
     path('login/', django.contrib.auth.views.LoginView.as_view(template_name='login.html', form_class=CustomAuthenticationForm), name='login'),
     path('logout/', auth.LogoutApi.as_view(), name='logout'),
     path('settings/', auth.AccountSettingsView.as_view(), name='settings'),
