@@ -7,7 +7,10 @@ def backfill_users(apps, schema_editor):
     spending_model = apps.get_model("SpendingsApp", "Spending")
     category_model = apps.get_model("SpendingsApp", "Category")
 
-    user = User.objects.get(username="aaron")
+    try:
+        user = User.objects.get(username="aaron")
+    except User.DoesNotExist:
+        return  # Nothing to backfill (e.g. clean test database)
 
     spending_model.objects.filter(user__isnull=True).update(user=user)
     category_model.objects.filter(user__isnull=True).update(user=user)
