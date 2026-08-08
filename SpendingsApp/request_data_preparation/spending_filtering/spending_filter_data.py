@@ -1,8 +1,9 @@
 
 
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
+from SpendingsApp.finance.user_data import UserData
 from SpendingsApp.utils.date_range import DateRange
 
 @dataclass(frozen=True)
@@ -18,6 +19,7 @@ class AmountRange:
 
 @dataclass(frozen=True)
 class SpendingFilterData:
+    user: UserData
     date_range: DateRange
     category_ids: List[int]
     amount_range: AmountRange

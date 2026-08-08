@@ -1,9 +1,10 @@
-
-
 from typing import Dict, List
 from django.forms.models import model_to_dict
+from django.http import HttpRequest, HttpResponseBadRequest
+from django.contrib.auth.models import User
 
 from SpendingsApp.models import Category, Spending
+
 
 # Spending related
 
@@ -29,23 +30,23 @@ def convert_spending_to_dict(spending: Spending) -> Dict[str, any]:
 def does_spending_exist(id: int) -> bool:
     return Spending.objects.filter(pk=id).exists()
 
-def get_spending_from_id(id: int) -> Spending:
+def get_spending_from_id(id: int, user: User) -> Spending:
     try:
-        return Spending.objects.get(pk=id)
+        return Spending.objects.get(pk=id, user=user)
     except Spending.DoesNotExist:
         raise ValueError(f"Spending with id {id} does not exist.")
 
-
 # Category related
 
-def get_category_from_id(id: int) -> Category:
+def get_category_from_id(id: int, user: User) -> Category:
     try:
-        return Category.objects.get(pk=id)
+        return Category.objects.get(pk=id, user=user)
     except Category.DoesNotExist:
         raise ValueError(f"Category with id {id} does not exist.")
     
 def is_category_used(category: Category) -> bool:
     return category.spending_set.exists()
 
-def is_category_name_used(name: str) -> bool:
-    return Category.objects.filter(name=name).exists()
+def is_category_name_used_by_user(name: str, user: User) -> bool:
+    return Category.objects.filter(name=name, user=user).exists()
+    

@@ -3,8 +3,12 @@ from typing import Dict, List
 from http import HTTPStatus
 
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
-from django.views.generic import View
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth import get_user_model
 from django.shortcuts import render
+
+from SpendingsApp.database_gateways.database_user_converter import DatabaseUserConverter
+from SpendingsApp.views.auth_views import AuthenticatedView
 
 from SpendingsApp.database_gateways.database_category_converter import DatabaseCategoryConverter
 from SpendingsApp.database_gateways.filtering.spending_filter_database_gateway import SpendingFilterDatabaseGateway
@@ -16,18 +20,23 @@ from SpendingsApp.request_data_preparation.spending_filtering.spending_filter_re
 
 from .util import get_spending_from_id, convert_spending_to_dict, convert_spendings_to_dict, calculate_total
 
+
+User = get_user_model()
+
+
 # ------------------------------
 # ---------- Views
 # ------------------------------
 
-class SpendingView(View):
+class SpendingView(AuthenticatedView):
     def get(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
-            spending = get_spending_from_id(id)
+            spending = get_spending_from_id(id, request.user)
         except ValueError as error:
             return HttpResponseBadRequest(str(error))
-        
-        spending_form = SpendingForm(instance=spending)
+
+        user = request.user
+        spending_form = SpendingForm(user=user, instance=spending)
         context = {'spendingForm': spending_form}
         return render(request, 'spending.html', context)
     
@@ -37,14 +46,14 @@ class SpendingView(View):
 # ------------------------------
 
 
-class SpendingEditApi(View):
+class SpendingEditApi(AuthenticatedView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._category_converter = DatabaseCategoryConverter()
 
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
-            spending = get_spending_from_id(id)
+            spending = get_spending_from_id(id, request.user)
         except ValueError as error:
             return HttpResponseBadRequest(str(error))
         
@@ -52,17 +61,18 @@ class SpendingEditApi(View):
         if not 'category' in post_data:
             return HttpResponseBadRequest("Missing 'category' field in request data.")
         
+        user = request.user
         categord_id = self._get_category_id(post_data['category'])
         post_data['category'] = categord_id
-        form = SpendingForm(data=post_data, instance=spending)
+        form = SpendingForm(user=user, data=post_data, instance=spending)
 
         if not form.is_valid():
             return HttpResponseBadRequest(str(form.errors))
         
         form.save()
 
-        spending_dict = convert_spending_to_dict(spending)
         message = "Spending edited successfully."
+        spending_dict = convert_spending_to_dict(spending)
         data = {
             "message": message,
             "spending": spending_dict
@@ -75,20 +85,22 @@ class SpendingEditApi(View):
     
 
 
-class SpendingGetApi(View):
+class SpendingGetApi(AuthenticatedView): 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._filter_extractor = SpendingFilterExtractor()
+        user_converter = DatabaseUserConverter()
+        self._filter_extractor = SpendingFilterExtractor(user_converter)
         self._database_gateway = SpendingFilterDatabaseGateway()
 
     def get(self, request: HttpRequest) -> HttpResponse:
         request_data = SpendingFilterRequestData(
+            user=request.user,
             start_date=request.GET.get('start_date'),
             end_date=request.GET.get('end_date'),
             category_ids=request.GET.getlist('categories'),
             min_amount=request.GET.get('min_amount'),
             max_amount=request.GET.get('max_amount'),
-            description=request.GET.get('description', "")
+            description=request.GET.get('description', ""),
         )
 
         try:
@@ -105,54 +117,57 @@ class SpendingGetApi(View):
     
 
 
-class SpendingGetRecentApi(View):
+class SpendingGetRecentApi(AuthenticatedView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._preparer = SpendingsCountPreparer()
 
     def get(self, request: HttpRequest) -> HttpResponse:
         spendings_count = self._preparer.extract_spendings_count(request.GET)
-        spendings = self._get_recent_spendings(spendings_count)
+        spendings = self._get_recent_spendings(request.user, spendings_count)
         spending_dicts = convert_spendings_to_dict(spendings)
         data = { 'spendings': spending_dicts }
         return JsonResponse(data, status=HTTPStatus.OK)
     
-    def _get_recent_spendings(self, spendings_count: int) -> List[Spending]:
+    def _get_recent_spendings(self, user: AbstractBaseUser, spendings_count: int) -> List[Spending]:
         order = '-entryDate'
-        return Spending.objects.order_by(order)[:spendings_count]    
+        return Spending.objects.filter(user=user).order_by(order)[:spendings_count]
     
 
 
-class SpendingPostApi(View):
+class SpendingPostApi(AuthenticatedView):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._category_converter = DatabaseCategoryConverter()
 
     def post(self, request: HttpRequest) -> HttpResponse:
         post_data = request.POST.dict()
-        form = self._convert_to_form(post_data)
+        user = request.user
+        form = self._convert_to_form(post_data, user)
 
         if not form.is_valid():
             return HttpResponseBadRequest(str(form.errors))
         
-        new_spending = form.save()
+        new_spending = form.save(commit=False)
+        new_spending.user = user
+        new_spending.save()
 
         spending_dict = convert_spending_to_dict(new_spending)
         data = { "message": "Spending submitted successfully.", "spending": spending_dict }
         return JsonResponse(data, status=HTTPStatus.OK)
     
-    def _convert_to_form(self, post_data: Dict[str, any]) -> SpendingForm:
+    def _convert_to_form(self, post_data: Dict[str, any], user: AbstractBaseUser) -> SpendingForm:
         posted_category = post_data.get('category')
         category = self._category_converter.convert_to_category(posted_category)
         post_data['category'] = category.id
-        return SpendingForm(data=post_data)
+        return SpendingForm(user=user, data=post_data)
     
 
 
-class SpendingDeleteApi(View):
+class SpendingDeleteApi(AuthenticatedView):
     def post(self, request: HttpRequest, id: int) -> HttpResponse:
         try:
-            spending = get_spending_from_id(id)
+            spending = get_spending_from_id(id, request.user)
         except ValueError as error:
             return HttpResponseBadRequest(str(error))
 

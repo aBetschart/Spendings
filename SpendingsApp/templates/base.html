@@ -18,6 +18,10 @@
     
     <script>
       const DJANGO_URLS = {
+          register: "{% url 'register' %}",
+          user_add: "{% url 'user_add' %}",
+          change_password: "{% url 'change_password' %}",
+
           spending_post: "{% url 'spending_post' %}",
           spending_get_recent: "{% url 'spending_get_recent' %}",
           spending_get: "{% url 'spending_get' %}",
@@ -41,7 +45,7 @@
   </head> 
   <body>
 
-    {% include 'navbar.html' %}
+    {% block navbar %}{% include 'navbar.html' %}{% endblock %}
 
     <br>
 

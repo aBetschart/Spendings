@@ -1,29 +1,30 @@
 
 from datetime import datetime
 
-from django.views.generic import TemplateView
-
 from SpendingsApp.forms import MonthlyOverviewForm, SpendingFilterForm, SpendingForm, MONTH_CHOICES, YearlyOverviewForm
+from SpendingsApp.views.auth_views import AuthenticatedTemplateView
 
-class HomeView(TemplateView):
+class HomeView(AuthenticatedTemplateView):
     template_name = 'home.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["spendingForm"] = SpendingForm()
+        user = self.request.user
+        context["spendingForm"] = SpendingForm(user=user)
         return context
     
 
-class FilterView(TemplateView):
+class FilterView(AuthenticatedTemplateView):
     template_name = 'filter.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["spendingFilterForm"] = SpendingFilterForm()
+        user = self.request.user
+        context["spendingFilterForm"] = SpendingFilterForm(user=user)
         return context
     
 
-class MonthView(TemplateView):
+class MonthView(AuthenticatedTemplateView):
     template_name = 'month.html'
 
     def get_context_data(self, **kwargs):
@@ -40,7 +41,7 @@ class MonthView(TemplateView):
         return MonthlyOverviewForm(initial=initial)
     
 
-class YearView(TemplateView):
+class YearView(AuthenticatedTemplateView):
     template_name = 'year.html'
 
     def get_context_data(self, **kwargs):

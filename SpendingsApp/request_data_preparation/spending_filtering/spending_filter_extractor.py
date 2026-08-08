@@ -4,6 +4,7 @@ from datetime import date
 import sys
 from typing import List
 
+from SpendingsApp.request_data_preparation.user_converter import UserConverter
 from SpendingsApp.utils.date_range import DateRange
 
 from .spending_filter_data import AmountRange, SpendingFilterData
@@ -12,23 +13,31 @@ from .spending_filter_request_data import SpendingFilterRequestData
 
 class SpendingFilterExtractor:
 
+    def __init__(self, user_converter: UserConverter):
+        self._user_converter = user_converter
+
     def extract_filter_data(self, request_data: SpendingFilterRequestData) -> SpendingFilterData: 
         if request_data.start_date is None:
-            raise ValueError("Start date is required")
+            raise ValueError("Missing required field: start_date.")
 
         if request_data.end_date is None:
-            raise ValueError("End date is required")
+            raise ValueError("Missing required field: end_date.")
+        
+        if request_data.user is None:
+            raise ValueError("Missing required field: user.")
         
         date_range = self._extract_date_range(request_data)
         category_ids = self._extract_category_ids(request_data)
         amount_range = self._extract_amount_range(request_data)
         description = self._extract_description(request_data)
+        user = self._user_converter.convert_to_user(request_data.user)
         
         return SpendingFilterData(
             date_range=date_range,
             category_ids=category_ids,
             amount_range=amount_range,
-            description=description
+            description=description,
+            user=user
         )
     
     
